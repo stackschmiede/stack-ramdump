@@ -1,0 +1,13 @@
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+.vs/
+*.DotSettings.user
+*.csproj.user
+__pycache__/
+.env*
+*.pyc
+.venv/
+node_modules/
