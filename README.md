@@ -1,6 +1,18 @@
 # RAM Dump
 
+[![GitHub Release](https://img.shields.io/github/v/release/3motiBot/ram-dump)](https://github.com/3motiBot/ram-dump/releases/latest)
+
 Windows 11 RAM-Manager zur Echtzeit-Ubersicht und sicheren Bereinigung des Arbeitsspeichers.
+
+## Download
+
+**[RamDump.exe herunterladen](https://github.com/3motiBot/ram-dump/releases/latest)** — Single-File, keine Installation noetig.
+
+1. `RamDump.exe` herunterladen
+2. Rechtsklick → **Als Administrator ausfuehren**
+3. Fertig
+
+> Ohne Admin-Rechte funktioniert die RAM-Analyse, Bereinigung ist dann deaktiviert.
 
 ## Features
 
