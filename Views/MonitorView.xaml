@@ -136,7 +136,7 @@
                     <TextBlock Margin="0,10,0,0" FontSize="13"
                                Foreground="{StaticResource TextSecondaryBrush}">
                         <Run Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Medium"
-                             Text="{Binding SystemMemory.UsagePercent, StringFormat={}{0:F1}%}"/>
+                             Text="{Binding SystemMemory.UsagePercent, StringFormat={}{0:F1}%, Mode=OneWay}"/>
                         <Run Text=" · "/>
                         <Run Text="{Binding Monitor.TopProcessName, StringFormat=Top: {0}}"/>
                     </TextBlock>
