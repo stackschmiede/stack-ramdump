@@ -49,6 +49,10 @@ public partial class MainWindow : Window
 
     private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        // SelectionChanged feuert während InitializeComponent(), bevor _viewModel zugewiesen ist
+        if (_viewModel is null) return;
+        if (!ReferenceEquals(e.OriginalSource, MainTabs)) return; // kein Bubble von inneren Selectors
+
         var isMonitor = MainTabs.SelectedIndex == MonitorTabIndex
                         && WindowState != WindowState.Minimized;
         if (isMonitor)

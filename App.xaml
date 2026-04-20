@@ -292,14 +292,21 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}">
                             <Grid>
-                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                   VerticalAlignment="Center"/>
-                                <Path x:Name="SortArrow" Visibility="Collapsed"
-                                      HorizontalAlignment="Right" VerticalAlignment="Center"
+                                <Path Grid.Column="1" x:Name="SortArrow" Visibility="Collapsed"
+                                      VerticalAlignment="Center"
                                       Fill="{StaticResource AccentBrush}" Margin="4,0,0,0"/>
-                                <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Width="2"
+                                <Thumb Grid.Column="0" Grid.ColumnSpan="2"
+                                       x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Width="4"
                                        Style="{x:Null}" Cursor="SizeWE" Opacity="0"/>
-                                <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Width="2"
+                                <Thumb Grid.Column="0" Grid.ColumnSpan="2"
+                                       x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Width="4"
                                        Style="{x:Null}" Cursor="SizeWE" Opacity="0"/>
                             </Grid>
                         </Border>
