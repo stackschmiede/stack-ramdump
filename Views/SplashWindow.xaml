@@ -1,0 +1,158 @@
+<Window x:Class="RamDump.Views.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="RAM Dump"
+        Width="560" Height="560"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        AllowsTransparency="False"
+        Background="#141415"
+        WindowStartupLocation="CenterScreen"
+        Cursor="Arrow"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Animated tile -->
+        <Viewbox Grid.Row="0" Width="380" Height="380"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                 Margin="0,20,0,0">
+            <Canvas Width="64" Height="64">
+                <!-- Win11 rounded tile -->
+                <Rectangle Width="64" Height="64" RadiusX="14" RadiusY="14" Fill="#141415"/>
+                <Rectangle Canvas.Left="0.75" Canvas.Top="0.75"
+                           Width="62.5" Height="62.5" RadiusX="13" RadiusY="13"
+                           Stroke="#0FEDEAE3" StrokeThickness="1"/>
+
+                <!-- Clipped content -->
+                <Canvas Width="64" Height="64">
+                    <Canvas.Clip>
+                        <RectangleGeometry Rect="0,0,64,64" RadiusX="14" RadiusY="14"/>
+                    </Canvas.Clip>
+
+                    <!-- Glow behind top chip -->
+                    <Canvas x:Name="GlowGroup">
+                        <Canvas.RenderTransform>
+                            <TranslateTransform x:Name="GlowTransform" X="32" Y="20"/>
+                        </Canvas.RenderTransform>
+                        <Ellipse x:Name="GlowOuter" Canvas.Left="-22" Canvas.Top="4"
+                                 Width="44" Height="16" Fill="#D4A574" Opacity="0"/>
+                        <Ellipse x:Name="GlowInner" Canvas.Left="-12" Canvas.Top="8"
+                                 Width="24" Height="8" Fill="#D4A574" Opacity="0"/>
+                    </Canvas>
+
+                    <!-- Shake group (chips) -->
+                    <Canvas x:Name="ShakeGroup" Width="64" Height="64">
+                        <Canvas.RenderTransform>
+                            <TranslateTransform x:Name="ShakeTransform"/>
+                        </Canvas.RenderTransform>
+
+                        <!-- BOTTOM chip (dy=0 base) -->
+                        <Canvas x:Name="BottomChip" Width="64" Height="64">
+                            <Canvas.RenderTransform>
+                                <TranslateTransform x:Name="BottomTransform" Y="-80"/>
+                            </Canvas.RenderTransform>
+                            <Path Data="M12 40 L32 48 L52 40 L32 32 Z"
+                                  Fill="#1A1A1C" Stroke="#EDEAE3" StrokeThickness="1.2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <Path Data="M12 40 L32 48 L32 52 L12 44 Z"
+                                  Fill="#0F0F10" Stroke="#EDEAE3" StrokeThickness="1.2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <Path Data="M52 40 L32 48 L32 52 L52 44 Z"
+                                  Fill="#141415" Stroke="#EDEAE3" StrokeThickness="1.2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+
+                            <!-- Pins (draw in after impact) -->
+                            <Path x:Name="Pin0" Data="M26 51 L23 53"
+                                  Stroke="#D4A574" StrokeThickness="1.4"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeDashCap="Round"
+                                  StrokeDashArray="5 5" StrokeDashOffset="5" Opacity="0"/>
+                            <Path x:Name="Pin1" Data="M20 47.5 L17 49.5"
+                                  Stroke="#D4A574" StrokeThickness="1.4"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeDashCap="Round"
+                                  StrokeDashArray="5 5" StrokeDashOffset="5" Opacity="0"/>
+                            <Path x:Name="Pin2" Data="M14 44 L11 46"
+                                  Stroke="#D4A574" StrokeThickness="1.4"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeDashCap="Round"
+                                  StrokeDashArray="5 5" StrokeDashOffset="5" Opacity="0"/>
+                            <Path x:Name="Pin3" Data="M42 51 L45 53"
+                                  Stroke="#D4A574" StrokeThickness="1.4"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeDashCap="Round"
+                                  StrokeDashArray="5 5" StrokeDashOffset="5" Opacity="0"/>
+                            <Path x:Name="Pin4" Data="M48 47.5 L51 49.5"
+                                  Stroke="#D4A574" StrokeThickness="1.4"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeDashCap="Round"
+                                  StrokeDashArray="5 5" StrokeDashOffset="5" Opacity="0"/>
+                            <Path x:Name="Pin5" Data="M54 44 L57 46"
+                                  Stroke="#D4A574" StrokeThickness="1.4"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeDashCap="Round"
+                                  StrokeDashArray="5 5" StrokeDashOffset="5" Opacity="0"/>
+                        </Canvas>
+
+                        <!-- MIDDLE chip (dy=-10 baked) -->
+                        <Canvas x:Name="MiddleChip" Width="64" Height="64">
+                            <Canvas.RenderTransform>
+                                <TranslateTransform x:Name="MiddleTransform" Y="-80"/>
+                            </Canvas.RenderTransform>
+                            <Path Data="M12 30 L32 38 L52 30 L32 22 Z"
+                                  Fill="#1A1A1C" Stroke="#EDEAE3" StrokeThickness="1.2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <Path Data="M12 30 L32 38 L32 42 L12 34 Z"
+                                  Fill="#0F0F10" Stroke="#EDEAE3" StrokeThickness="1.2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <Path Data="M52 30 L32 38 L32 42 L52 34 Z"
+                                  Fill="#141415" Stroke="#EDEAE3" StrokeThickness="1.2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                        </Canvas>
+
+                        <!-- TOP chip (dy=-20 baked) + accent -->
+                        <Canvas x:Name="TopChip" Width="64" Height="64">
+                            <Canvas.RenderTransform>
+                                <TranslateTransform x:Name="TopTransform" Y="-80"/>
+                            </Canvas.RenderTransform>
+                            <Path Data="M12 20 L32 28 L52 20 L32 12 Z"
+                                  Fill="#1A1A1C" Stroke="#EDEAE3" StrokeThickness="1.2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <Path Data="M12 20 L32 28 L32 32 L12 24 Z"
+                                  Fill="#0F0F10" Stroke="#EDEAE3" StrokeThickness="1.2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <Path Data="M52 20 L32 28 L32 32 L52 24 Z"
+                                  Fill="#141415" Stroke="#EDEAE3" StrokeThickness="1.2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <Path x:Name="AccentLine" Data="M22 16 L32 20 L42 16"
+                                  Stroke="#D4A574" StrokeThickness="1.6"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Opacity="0"/>
+                        </Canvas>
+                    </Canvas>
+
+                    <!-- Sparks layer (programmatically populated) -->
+                    <Canvas x:Name="SparksLayer" Width="64" Height="64">
+                        <Canvas.RenderTransform>
+                            <TranslateTransform x:Name="SparksTransform" X="32" Y="20"/>
+                        </Canvas.RenderTransform>
+                    </Canvas>
+
+                    <!-- Impact flash overlay -->
+                    <Rectangle x:Name="FlashRect"
+                               Width="64" Height="64"
+                               Fill="#FFF3DF" Opacity="0"/>
+                </Canvas>
+            </Canvas>
+        </Viewbox>
+
+        <!-- Wordmark -->
+        <StackPanel Grid.Row="1" x:Name="Wordmark"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Margin="0,8,0,48"
+                    Opacity="0"/>
+    </Grid>
+</Window>

@@ -17,6 +17,13 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        var splash = new SplashWindow();
+        splash.Closed += (_, _) => LaunchMainWindow();
+        splash.Show();
+    }
+
+    private void LaunchMainWindow()
+    {
         _mainWindow = new MainWindow();
 
         var settings = SettingsService.Load();
@@ -30,6 +37,7 @@ public partial class App : Application
         _mainWindow.Height = settings.WindowHeight;
 
         _mainWindow.Show();
+        _mainWindow.Activate();
 
         InitTray();
 
@@ -41,7 +49,6 @@ public partial class App : Application
                 "RAM Dump",
                 $"RAM-Auslastung bei {msg.UsagePercent:F0}%!",
                 BalloonIcon.Warning);
-            // Reset nach 60s damit erneut gewarnt werden kann
             _ = Task.Delay(60_000).ContinueWith(_ => _thresholdNotified = false);
         });
     }

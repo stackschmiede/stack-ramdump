@@ -1,7 +1,7 @@
 # ram-dump
 
 ## Stand
-- 2026-04-21 Session 4: RAM-Tab Redesign + Monitor Auto-Höhe fertig
+- 2026-04-21 Session 4/5: RAM-Tab Redesign + Monitor Auto-Höhe + Splash-Animation
 - Status: bereit zum Windows-Test — git pull → dotnet run (Admin)
 - Build: 0 Warnungen, 0 Fehler (Windows-dotnet via WSL)
 
@@ -29,9 +29,17 @@
 - Services/AppSettings.cs — RamWindowHeight, ActiveFilter
 - Converters/ — 7 neue Konverter (s.o.)
 
+## Session 5 — Splash-Animation
+- SplashWindow (560×560, borderless, Topmost) zeigt 64×64 Design-Canvas via Viewbox
+- Animation (4s): 3 Iso-Chips droppen gestaffelt (bottom → middle → top, easeInQuad), Pins zeichnen sich nach Impact, Accent-Linie am Top-Chip, Flash + Spark-Burst + Shake, Wordmark "ramdump-stack" fadet letter-by-letter ein
+- CompositionTarget.Rendering + Stopwatch, 18 Spark-Ellipsen + 13 Letter-TextBlocks vorgeneriert
+- Klick auf Splash = skip. Fade-Out zwischen 3.55 s und 3.95 s
+- App.xaml: ShutdownMode=OnExplicitShutdown. App.OnStartup → Splash zuerst, auf Splash.Closed → MainWindow mit Settings-Position zeigen + Tray initialisieren
+
 ## Windows-Test Checkliste
 1. `git pull && dotnet run` (Admin)
-2. RAM-Tab visuell: Donut-Arc bei Auslastung, Farbwechsel an Schwellen, KPI-Cards (Verfügbar/Cache/Commit/Standby), Hero-Sparkline (alle 5 s)
+2. **Splash**: spielt 4 s, Chips droppen, Pins erscheinen, Flash + Funken, Wordmark fadet ein. Danach öffnet sich MainWindow an der gespeicherten Position. Klick auf Splash = skip.
+3. RAM-Tab visuell: Donut-Arc bei Auslastung, Farbwechsel an Schwellen, KPI-Cards (Verfügbar/Cache/Commit/Standby), Hero-Sparkline (alle 5 s)
 3. Chips filtern, Counts aktualisieren, Multi-Select (Ctrl/Shift) aktiviert Footer-Buttons
 4. „Auswahl trimmen" → WS fallen; „Auswahl beenden" → Prozess weg (nach Bestätigung)
 5. Gruppierung: Header mit Bar + Pct-Badge
