@@ -11,4 +11,6 @@ public class AppSettings
     public double WindowTop { get; set; } = double.NaN;
     public bool IsGrouped { get; set; }
     public bool ShowSystemProcesses { get; set; } = false;
+    public int ActiveTabIndex { get; set; } = 0;
+    public int MonitorRefreshIntervalSeconds { get; set; } = 2;
 }

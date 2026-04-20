@@ -60,6 +60,7 @@ public partial class MainViewModel : ObservableObject
 
     public ObservableCollection<ProcessMemoryInfoViewModel> Processes { get; } = [];
     public ICollectionView ProcessesView { get; }
+    public MonitorViewModel Monitor { get; } = new();
 
     public MainViewModel()
     {
@@ -342,6 +343,7 @@ public partial class MainViewModel : ObservableObject
             SortDirection = Enum.TryParse<ListSortDirection>(s.SortDirection, out var d) ? d : ListSortDirection.Descending;
             IsGrouped = s.IsGrouped;
             ShowSystemProcesses = s.ShowSystemProcesses;
+            Monitor.RefreshIntervalSeconds = s.MonitorRefreshIntervalSeconds;
         }
         finally
         {
@@ -359,6 +361,7 @@ public partial class MainViewModel : ObservableObject
             SortDirection = SortDirection.ToString(),
             IsGrouped = IsGrouped,
             ShowSystemProcesses = ShowSystemProcesses,
+            MonitorRefreshIntervalSeconds = Monitor.RefreshIntervalSeconds,
         });
     }
 
@@ -374,6 +377,7 @@ public partial class MainViewModel : ObservableObject
         s.SortDirection = SortDirection.ToString();
         s.IsGrouped = IsGrouped;
         s.ShowSystemProcesses = ShowSystemProcesses;
+        s.MonitorRefreshIntervalSeconds = Monitor.RefreshIntervalSeconds;
         SettingsService.Save(s);
     }
 }
