@@ -487,10 +487,118 @@
         </TabItem>
 
         <TabItem Header="About">
-            <!-- Phase 7 -->
-            <TextBlock Text="About — kommt in Phase 7"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{StaticResource TextTertiaryBrush}"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel MaxWidth="520" HorizontalAlignment="Center"
+                            Margin="32,32,32,32" DataContext="{Binding About}">
+
+                    <!-- Header: Icon + Titel -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <Image Source="/Resources/app.ico" Width="64" Height="64" Margin="0,0,20,0"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock FontSize="24" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}">
+                                <Run Text="RAM Dump"/>
+                                <Run Text=" v" Foreground="{StaticResource TextTertiaryBrush}"/>
+                                <Run Text="{Binding AppVersion, Mode=OneTime}"
+                                     Foreground="{StaticResource TextTertiaryBrush}"/>
+                            </TextBlock>
+                            <TextBlock Text="Windows RAM-Manager &amp; System-Monitor"
+                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Divider -->
+                    <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,0,0,20"/>
+
+                    <!-- Entwickler -->
+                    <TextBlock Text="ENTWICKLER" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,10"/>
+                    <TextBlock Text="Nawinn Gutzeit" FontSize="14"
+                               Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+                    <TextBlock Margin="0,0,0,6">
+                        <Hyperlink NavigateUri="https://stackschmiede.de"
+                                   RequestNavigate="Hyperlink_RequestNavigate"
+                                   Foreground="{StaticResource AccentBrush}">
+                            stackschmiede.de
+                        </Hyperlink>
+                    </TextBlock>
+                    <TextBlock Margin="0,0,0,24">
+                        <Hyperlink NavigateUri="https://github.com/stackschmiede/stack-ramdump"
+                                   RequestNavigate="Hyperlink_RequestNavigate"
+                                   Foreground="{StaticResource AccentBrush}">
+                            github.com/stackschmiede/stack-ramdump
+                        </Hyperlink>
+                    </TextBlock>
+
+                    <!-- System-Infos -->
+                    <TextBlock Text="SYSTEM" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,10"/>
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="CPU"
+                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding CpuName}"
+                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"
+                                   TextWrapping="Wrap"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="GPU"
+                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding GpuName}"
+                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"
+                                   TextWrapping="Wrap"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="RAM"
+                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding RamTotal}"
+                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="OS"
+                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1"
+                                   Text="{Binding OsDescription}"
+                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"
+                                   TextWrapping="Wrap"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Uptime"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1"
+                                   Text="{Binding Uptime}"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                    </Grid>
+
+                    <!-- Dependencies -->
+                    <TextBlock Text="ABHÄNGIGKEITEN" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,10"/>
+                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" LineHeight="22"
+                               Margin="0,0,0,24">
+                        <Run Text="· .NET 8 · WPF"/><LineBreak/>
+                        <Run Text="· CommunityToolkit.Mvvm 8.4.0"/><LineBreak/>
+                        <Run Text="· Hardcodet.NotifyIcon.Wpf 2.0.1"/><LineBreak/>
+                        <Run Text="· LibreHardwareMonitorLib 0.9.4"/>
+                    </TextBlock>
+
+                    <!-- Footer -->
+                    <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,0,0,16"/>
+                    <TextBlock Text="© 2026 Stackschmiede · MIT License"
+                               Foreground="{StaticResource TextTertiaryBrush}" FontSize="12"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </ScrollViewer>
         </TabItem>
     </TabControl>
 </Window>

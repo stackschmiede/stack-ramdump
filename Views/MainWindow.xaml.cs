@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Navigation;
 using CommunityToolkit.Mvvm.Messaging;
 using RamDump.ViewModels;
 using RamDump.ViewModels.Messages;
@@ -12,6 +14,7 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
     private const int MonitorTabIndex = 1;
+    private const int AboutTabIndex = 2;
 
     [DllImport("dwmapi.dll", PreserveSig = true)]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
@@ -52,9 +55,18 @@ public partial class MainWindow : Window
             _viewModel.Monitor.EnsureInitialized();
         _viewModel.Monitor.IsActive = isMonitor;
 
+        if (MainTabs.SelectedIndex == AboutTabIndex)
+            _viewModel.About.LoadSystemInfo();
+
         var s = RamDump.Services.SettingsService.Load();
         s.ActiveTabIndex = MainTabs.SelectedIndex;
         RamDump.Services.SettingsService.Save(s);
+    }
+
+    private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+        e.Handled = true;
     }
 
     private void ApplyDarkTitleBar()

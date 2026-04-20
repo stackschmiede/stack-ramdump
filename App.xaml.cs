@@ -84,7 +84,9 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         _trayIcon?.Dispose();
-        (_mainWindow?.DataContext as RamDump.ViewModels.MainViewModel)?.Monitor.Dispose();
+        var vm = _mainWindow?.DataContext as RamDump.ViewModels.MainViewModel;
+        vm?.Monitor.Dispose();
+        vm?.About.Dispose();
         base.OnExit(e);
     }
 }

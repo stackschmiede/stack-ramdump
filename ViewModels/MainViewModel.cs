@@ -61,6 +61,7 @@ public partial class MainViewModel : ObservableObject
     public ObservableCollection<ProcessMemoryInfoViewModel> Processes { get; } = [];
     public ICollectionView ProcessesView { get; }
     public MonitorViewModel Monitor { get; } = new();
+    public AboutViewModel About { get; } = new();
 
     public MainViewModel()
     {
