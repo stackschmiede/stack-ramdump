@@ -52,11 +52,26 @@ public class MemoryQueryService
         var status = new NativeMethods.MemoryStatusEx { dwLength = (uint)Marshal.SizeOf<NativeMethods.MemoryStatusEx>() };
         NativeMethods.GlobalMemoryStatusEx(ref status);
 
+        long cached = 0, commit = 0, pageFile = 0, pageSize = 4096;
+        if (NativeMethods.GetPerformanceInfo(
+                out var pi,
+                (uint)Marshal.SizeOf<NativeMethods.PerformanceInformation>()))
+        {
+            pageSize = (long)(ulong)pi.PageSize;
+            cached = (long)(ulong)pi.SystemCache * pageSize;
+            commit = (long)(ulong)pi.CommitTotal * pageSize;
+        }
+        // PageFile: Total - Available aus MemoryStatusEx
+        pageFile = (long)(status.ullTotalPageFile - status.ullAvailPageFile);
+
         return new SystemMemoryInfo
         {
             TotalPhysical = (long)status.ullTotalPhys,
             AvailablePhysical = (long)status.ullAvailPhys,
-            CachedBytes = GetCachedBytes(),
+            CachedBytes = cached,
+            CommitBytes = commit,
+            PageFileBytes = pageFile,
+            StandbyBytes = 0, // Windows-API liefert das nicht direkt ohne WMI
         };
     }
 
@@ -172,14 +187,4 @@ public class MemoryQueryService
         }
     }
 
-    private static long GetCachedBytes()
-    {
-        if (NativeMethods.GetPerformanceInfo(
-                out var pi,
-                (uint)Marshal.SizeOf<NativeMethods.PerformanceInformation>()))
-        {
-            return (long)(ulong)pi.SystemCache * (long)(ulong)pi.PageSize;
-        }
-        return 0;
-    }
 }

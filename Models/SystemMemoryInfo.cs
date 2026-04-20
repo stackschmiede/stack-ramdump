@@ -9,4 +9,7 @@ public class SystemMemoryInfo
         ? (double)UsedPhysical / TotalPhysical * 100.0
         : 0;
     public long CachedBytes { get; init; }
+    public long CommitBytes { get; init; }
+    public long PageFileBytes { get; init; }
+    public long StandbyBytes { get; init; }
 }

@@ -483,7 +483,7 @@
         </TabItem>
 
         <TabItem Header="Monitor">
-            <views:MonitorView DataContext="{Binding Monitor}"/>
+            <views:MonitorView/>
         </TabItem>
 
         <TabItem Header="About">
@@ -493,8 +493,10 @@
 
                     <!-- Header: Icon + Titel -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                        <Image Source="/Resources/app.ico" Width="64" Height="64" Margin="0,0,20,0"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <Image Source="pack://application:,,,/Resources/app-logo-256.png"
+                               Width="96" Height="96" Margin="0,0,20,0"
+                               RenderOptions.BitmapScalingMode="HighQuality"
+                               SnapsToDevicePixels="True"/>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock FontSize="24" FontWeight="SemiBold"
                                        Foreground="{StaticResource TextPrimaryBrush}">

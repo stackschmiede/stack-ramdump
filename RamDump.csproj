@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Resource Include="Resources\app.ico"/>
+    <Resource Include="Resources\app-logo-256.png"/>
   </ItemGroup>
 
   <ItemGroup>

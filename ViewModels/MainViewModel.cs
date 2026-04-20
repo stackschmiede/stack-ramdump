@@ -115,6 +115,7 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnSystemMemoryChanged(SystemMemoryInfo value)
     {
+        Monitor.SystemMemory = value;
         if (value.UsagePercent >= 85)
             WeakReferenceMessenger.Default.Send(new MemoryThresholdMessage(value.UsagePercent));
     }
@@ -193,6 +194,25 @@ public partial class MainViewModel : ObservableObject
         }
 
         ApplySort();
+        SyncTopProcess();
+    }
+
+    private void SyncTopProcess()
+    {
+        var top = Processes.OrderByDescending(p => p.WorkingSet).FirstOrDefault();
+        if (top is null)
+        {
+            Monitor.TopProcessName = "—";
+            Monitor.TopProcessSize = "—";
+            return;
+        }
+        Monitor.TopProcessName = top.Name;
+        Monitor.TopProcessSize = top.WorkingSet switch
+        {
+            >= 1_073_741_824 => $"{top.WorkingSet / 1_073_741_824.0:F1} GB",
+            >= 1_048_576 => $"{top.WorkingSet / 1_048_576.0:F0} MB",
+            _ => $"{top.WorkingSet / 1024.0:F0} KB",
+        };
     }
 
     [RelayCommand(CanExecute = nameof(CanCleanup))]
