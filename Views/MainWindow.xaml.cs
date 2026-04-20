@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using CommunityToolkit.Mvvm.Messaging;
 using RamDump.ViewModels;
@@ -10,6 +11,7 @@ namespace RamDump.Views;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
+    private const int MonitorTabIndex = 1;
 
     [DllImport("dwmapi.dll", PreserveSig = true)]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
@@ -22,7 +24,12 @@ public partial class MainWindow : Window
         _viewModel = new MainViewModel();
         DataContext = _viewModel;
 
-        Loaded += (_, _) => ApplyDarkTitleBar();
+        Loaded += (_, _) =>
+        {
+            ApplyDarkTitleBar();
+            var saved = RamDump.Services.SettingsService.Load();
+            MainTabs.SelectedIndex = Math.Clamp(saved.ActiveTabIndex, 0, MainTabs.Items.Count - 1);
+        };
 
         WeakReferenceMessenger.Default.Register<FocusSearchMessage>(this, (_, _) =>
         {
@@ -37,6 +44,19 @@ public partial class MainWindow : Window
         });
     }
 
+    private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var isMonitor = MainTabs.SelectedIndex == MonitorTabIndex
+                        && WindowState != WindowState.Minimized;
+        if (isMonitor)
+            _viewModel.Monitor.EnsureInitialized();
+        _viewModel.Monitor.IsActive = isMonitor;
+
+        var s = RamDump.Services.SettingsService.Load();
+        s.ActiveTabIndex = MainTabs.SelectedIndex;
+        RamDump.Services.SettingsService.Save(s);
+    }
+
     private void ApplyDarkTitleBar()
     {
         var hwnd = new WindowInteropHelper(this).Handle;
@@ -48,7 +68,14 @@ public partial class MainWindow : Window
     {
         base.OnStateChanged(e);
         if (WindowState == WindowState.Minimized)
+        {
+            _viewModel.Monitor.IsActive = false;
             Hide();
+        }
+        else if (MainTabs.SelectedIndex == MonitorTabIndex)
+        {
+            _viewModel.Monitor.IsActive = true;
+        }
     }
 
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)

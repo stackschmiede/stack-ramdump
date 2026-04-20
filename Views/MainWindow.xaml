@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:RamDump.Converters"
         xmlns:vm="clr-namespace:RamDump.ViewModels"
+        xmlns:views="clr-namespace:RamDump.Views"
         Title="RAM Dump" Width="900" Height="700"
         MinWidth="700" MinHeight="500"
         WindowStartupLocation="CenterScreen"
@@ -33,17 +34,11 @@
             <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
         </Style>
 
-        <!-- KPI-Card Border (COLORS.md §7) -->
-        <Style x:Key="CardBorder" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource BgRaisedBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="16,14"/>
-        </Style>
     </Window.Resources>
 
-    <Grid Margin="16">
+    <TabControl x:Name="MainTabs" SelectionChanged="MainTabs_SelectionChanged">
+        <TabItem Header="RAM">
+        <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -485,4 +480,17 @@
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
+        </TabItem>
+
+        <TabItem Header="Monitor">
+            <views:MonitorView DataContext="{Binding Monitor}"/>
+        </TabItem>
+
+        <TabItem Header="About">
+            <!-- Phase 7 -->
+            <TextBlock Text="About — kommt in Phase 7"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{StaticResource TextTertiaryBrush}"/>
+        </TabItem>
+    </TabControl>
 </Window>
