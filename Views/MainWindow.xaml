@@ -151,6 +151,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="200"/>
             </Grid.ColumnDefinitions>
 
@@ -161,10 +162,13 @@
             <ToggleButton Grid.Column="1" Content="Gruppieren"
                           IsChecked="{Binding IsGrouped}" Margin="0,0,8,0"/>
 
-            <ToggleButton Grid.Column="2" Content="Auto-Refresh"
+            <ToggleButton Grid.Column="2" Content="Win-Prozesse"
+                          IsChecked="{Binding ShowSystemProcesses}" Margin="0,0,8,0"/>
+
+            <ToggleButton Grid.Column="3" Content="Auto-Refresh"
                           IsChecked="{Binding AutoRefresh}" Margin="0,0,8,0"/>
 
-            <Grid Grid.Column="3">
+            <Grid Grid.Column="4">
                 <TextBox x:Name="SearchBox"
                          Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                          VerticalContentAlignment="Center"/>
@@ -353,7 +357,7 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="{x:Type GroupItem}">
                                         <StackPanel>
-                                            <ToggleButton x:Name="ExpandToggle" IsChecked="True"
+                                            <ToggleButton x:Name="ExpandToggle" IsChecked="False"
                                                           OverridesDefaultStyle="True" Focusable="False">
                                                 <ToggleButton.Template>
                                                     <ControlTemplate TargetType="ToggleButton">

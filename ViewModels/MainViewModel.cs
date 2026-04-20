@@ -55,6 +55,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isGrouped;
 
+    [ObservableProperty]
+    private bool _showSystemProcesses = false;
+
     public ObservableCollection<ProcessMemoryInfoViewModel> Processes { get; } = [];
     public ICollectionView ProcessesView { get; }
 
@@ -93,6 +96,12 @@ public partial class MainViewModel : ObservableObject
     partial void OnSortColumnChanged(string value) => SaveSettings();
     partial void OnSortDirectionChanged(ListSortDirection value) => SaveSettings();
 
+    partial void OnShowSystemProcessesChanged(bool value)
+    {
+        ProcessesView.Refresh();
+        SaveSettings();
+    }
+
     partial void OnIsGroupedChanged(bool value)
     {
         ProcessesView.GroupDescriptions.Clear();
@@ -111,6 +120,7 @@ public partial class MainViewModel : ObservableObject
     private bool FilterProcess(object obj)
     {
         if (obj is not ProcessMemoryInfoViewModel vm) return false;
+        if (!ShowSystemProcesses && vm.IsSystemProcess) return false;
         if (string.IsNullOrWhiteSpace(SearchText)) return true;
         return vm.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
             || vm.Pid.ToString().Contains(SearchText);
@@ -331,6 +341,7 @@ public partial class MainViewModel : ObservableObject
             SortColumn = s.SortColumn;
             SortDirection = Enum.TryParse<ListSortDirection>(s.SortDirection, out var d) ? d : ListSortDirection.Descending;
             IsGrouped = s.IsGrouped;
+            ShowSystemProcesses = s.ShowSystemProcesses;
         }
         finally
         {
@@ -347,6 +358,7 @@ public partial class MainViewModel : ObservableObject
             SortColumn = SortColumn,
             SortDirection = SortDirection.ToString(),
             IsGrouped = IsGrouped,
+            ShowSystemProcesses = ShowSystemProcesses,
         });
     }
 
@@ -361,6 +373,7 @@ public partial class MainViewModel : ObservableObject
         s.SortColumn = SortColumn;
         s.SortDirection = SortDirection.ToString();
         s.IsGrouped = IsGrouped;
+        s.ShowSystemProcesses = ShowSystemProcesses;
         SettingsService.Save(s);
     }
 }

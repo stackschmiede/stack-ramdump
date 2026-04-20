@@ -7,4 +7,5 @@ public class ProcessMemoryInfo
     public long WorkingSet { get; init; }
     public long PrivateBytes { get; init; }
     public long PeakWorkingSet { get; init; }
+    public bool IsSystemProcess { get; init; }
 }

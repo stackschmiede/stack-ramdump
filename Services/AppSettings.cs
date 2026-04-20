@@ -10,4 +10,5 @@ public class AppSettings
     public double WindowLeft { get; set; } = double.NaN;
     public double WindowTop { get; set; } = double.NaN;
     public bool IsGrouped { get; set; }
+    public bool ShowSystemProcesses { get; set; } = false;
 }

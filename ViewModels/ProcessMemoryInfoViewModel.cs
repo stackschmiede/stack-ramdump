@@ -8,6 +8,7 @@ public partial class ProcessMemoryInfoViewModel : ObservableObject
 {
     public int Pid { get; }
     public string Name { get; }
+    public bool IsSystemProcess { get; }
 
     [ObservableProperty] private long _workingSet;
     [ObservableProperty] private long _privateBytes;
@@ -20,6 +21,7 @@ public partial class ProcessMemoryInfoViewModel : ObservableObject
     {
         Pid = model.Pid;
         Name = model.Name;
+        IsSystemProcess = model.IsSystemProcess;
         _workingSet = model.WorkingSet;
         _privateBytes = model.PrivateBytes;
         _peakWorkingSet = model.PeakWorkingSet;
