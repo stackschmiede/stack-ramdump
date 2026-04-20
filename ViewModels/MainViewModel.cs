@@ -72,7 +72,7 @@ public partial class MainViewModel : ObservableObject
             try { MemoryQueryService.EnableRequiredPrivileges(); } catch { /* best effort */ }
         }
 
-        _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += (_, _) => RefreshCommand.Execute(null);
 
         if (AutoRefresh)
@@ -123,40 +123,61 @@ public partial class MainViewModel : ObservableObject
         SystemMemory = mem;
 
         var procs = await Task.Run(MemoryQueryService.GetProcesses);
-        var vms = procs
-            .OrderByDescending(p => p.WorkingSet)
-            .Select(p => new ProcessMemoryInfoViewModel(p))
-            .ToList();
 
-        // Growth tracking
-        foreach (var vm in vms)
-        {
-            if (_previousWorkingSets.TryGetValue(vm.Pid, out long prev))
-            {
-                long delta = vm.WorkingSet - prev;
-                vm.GrowthDelta = delta;
-                vm.IsGrowing = delta >= GrowthThresholdBytes;
-            }
-        }
-        _previousWorkingSets = vms.ToDictionary(v => v.Pid, v => v.WorkingSet);
+        var prevSets = _previousWorkingSets;
+        _previousWorkingSets = procs.ToDictionary(p => p.Pid, p => p.WorkingSet);
 
-        // Icons async laden
-        var vmsCopy = vms.ToList();
-        _ = Task.Run(() =>
-        {
-            foreach (var vm in vmsCopy)
-            {
-                var icon = ProcessIconService.GetIcon(vm.Pid);
-                if (icon != null)
-                    Application.Current?.Dispatcher.InvokeAsync(() => vm.Icon = icon);
-            }
-        });
+        var newVms = new List<ProcessMemoryInfoViewModel>();
 
         lock (_processLock)
         {
-            Processes.Clear();
-            foreach (var vm in vms)
-                Processes.Add(vm);
+            var existingMap = Processes.ToDictionary(vm => vm.Pid);
+            var freshPids = procs.Select(p => p.Pid).ToHashSet();
+
+            for (int i = Processes.Count - 1; i >= 0; i--)
+            {
+                if (!freshPids.Contains(Processes[i].Pid))
+                    Processes.RemoveAt(i);
+            }
+
+            foreach (var p in procs)
+            {
+                long prev = prevSets.TryGetValue(p.Pid, out long v) ? v : 0;
+                long delta = p.WorkingSet - prev;
+
+                if (existingMap.TryGetValue(p.Pid, out var vm))
+                {
+                    vm.WorkingSet = p.WorkingSet;
+                    vm.PrivateBytes = p.PrivateBytes;
+                    vm.PeakWorkingSet = p.PeakWorkingSet;
+                    vm.GrowthDelta = delta;
+                    vm.IsGrowing = delta >= GrowthThresholdBytes;
+                }
+                else
+                {
+                    vm = new ProcessMemoryInfoViewModel(p)
+                    {
+                        GrowthDelta = delta,
+                        IsGrowing = delta >= GrowthThresholdBytes,
+                    };
+                    Processes.Add(vm);
+                    newVms.Add(vm);
+                }
+            }
+        }
+
+        // Icons nur für neue Prozesse laden (gecached per Pfad)
+        if (newVms.Count > 0)
+        {
+            _ = Task.Run(() =>
+            {
+                foreach (var vm in newVms)
+                {
+                    var icon = ProcessIconService.GetIcon(vm.Pid);
+                    if (icon != null)
+                        Application.Current?.Dispatcher.InvokeAsync(() => vm.Icon = icon);
+                }
+            });
         }
 
         ApplySort();

@@ -193,6 +193,7 @@
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   CanUserReorderColumns="True"
+                  CanUserResizeColumns="True"
                   CanUserSortColumns="True"
                   SelectionMode="Single"
                   BorderThickness="0"
@@ -346,30 +347,56 @@
 
             <DataGrid.GroupStyle>
                 <GroupStyle>
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <Border Background="{StaticResource BgRaisedBrush}"
-                                    CornerRadius="3" Padding="8,4" Margin="0,2">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
-                                               Foreground="{StaticResource TextPrimaryBrush}"/>
-                                    <TextBlock Foreground="{StaticResource TextTertiaryBrush}" Margin="8,0,0,0">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="({0} Prozesse — {1})">
-                                                <Binding Path="ItemCount"/>
-                                                <Binding Path="Items" Converter="{StaticResource GroupSum}" ConverterParameter="WorkingSet"/>
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <StackPanel>
+                                            <ToggleButton x:Name="ExpandToggle" IsChecked="True"
+                                                          OverridesDefaultStyle="True" Focusable="False">
+                                                <ToggleButton.Template>
+                                                    <ControlTemplate TargetType="ToggleButton">
+                                                        <Border Background="{StaticResource BgRaisedBrush}"
+                                                                CornerRadius="3" Padding="8,4" Margin="0,2"
+                                                                Cursor="Hand">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock x:Name="Arrow" Text="▶" FontSize="9"
+                                                                           Foreground="{StaticResource TextTertiaryBrush}"
+                                                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                                <TextBlock Foreground="{StaticResource TextTertiaryBrush}" Margin="8,0,0,0">
+                                                                    <TextBlock.Text>
+                                                                        <MultiBinding StringFormat="({0} — {1})">
+                                                                            <Binding Path="ItemCount"/>
+                                                                            <Binding Path="Items" Converter="{StaticResource GroupSum}" ConverterParameter="WorkingSet"/>
+                                                                        </MultiBinding>
+                                                                    </TextBlock.Text>
+                                                                </TextBlock>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsChecked" Value="True">
+                                                                <Setter TargetName="Arrow" Property="Text" Value="▼"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </ToggleButton.Template>
+                                            </ToggleButton>
+                                            <ItemsPresenter x:Name="ItemsHost"
+                                                            Visibility="{Binding IsChecked, ElementName=ExpandToggle, Converter={StaticResource BoolToVisibility}}"/>
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
                 </GroupStyle>
             </DataGrid.GroupStyle>
 
             <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Name" Width="*" MinWidth="160" SortMemberPath="Name">
+                <DataGridTemplateColumn Header="Name" Width="*" MinWidth="200" SortMemberPath="Name">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
