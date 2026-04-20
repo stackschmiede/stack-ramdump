@@ -1,9 +1,8 @@
 # ram-dump
 
 ## Stand
-- 2026-04-20 Session 2: Performance-Fix, Groups collapsible, Win-Prozesse-Filter
-- 2026-04-20 Opus-Replanning: Plan für Tab-Umbau mit mehr Tiefe überarbeitet
-- Status: bereit für neue Session (Plan in ~/.claude/plans/ramdump-tabs.md)
+- 2026-04-20 Session 3: Tab-Umbau vollständig abgeschlossen (alle 7 Phasen)
+- Status: bereit zum Windows-Test — git pull → dotnet run (Admin)
 
 ## Struktur
 - .NET 8 WPF, MVVM (CommunityToolkit.Mvvm)
@@ -32,13 +31,16 @@
 - Farbsystem: COLORS.md — Ocker (#D4A574) als Markenfarbe
 - ProgressBar 4 Stufen (60/80/92): Grün → Ocker → Orange → Rot
 
-## Nächste Session (Plan: ~/.claude/plans/ramdump-tabs.md — Opus-Replanning)
-- 7 Phasen (NuGet → Quick Wins → Service → VM+View → About)
-- Tab-Umbau: RAM | Monitor | About
-- Group-Header: App-Icon links vom Pfeil (direktes Items[0].Icon-Binding, kein Converter)
-- Spalten: Header rechtsbündig pro Spalte (nicht global), PID 90px, Work/Priv/Peak 140px
-- HardwareSensorService mit LHM 0.9.4 — Lazy-Init, try/catch, Fallback
-- MonitorVM Timer-Lifecycle: IsActive = TabSelected && !Minimized && !Paused
-- About: Nawinn Gutzeit + stackschmiede.de + GitHub + dynamische System-Infos (CPU/GPU/OS/Uptime)
-- Settings: ActiveTabIndex + MonitorRefreshIntervalSeconds persistiert
-- Neue Ideen im Plan dokumentiert (Sparklines, Power-Plan, Temp-Schwellen etc.)
+## Session 3 — Was gebaut wurde
+- Phase 1: LHM 0.9.4 NuGet, Authors/Company/Description
+- Phase 2: Group-Icon (Items[0].Icon), PID→90, Work/Priv/Peak→140, Header rechtsbündig
+- Phase 3: HardwareSensorService (LHM + PerformanceCounter-Fallback, SensorSnapshot record)
+- Phase 4: MonitorViewModel (Timer-Lifecycle), CoreUsageViewModel, AppSettings erweitert
+- Phase 5: TabControl-Root (RAM|Monitor|About), TabItem/TabControl Styles in App.xaml
+- Phase 6: MonitorView (2×2 Grid, per-Core Balken, Pause/Intervall-Toolbar, LHM-Banner)
+- Phase 7: AboutViewModel (WMI CPU/GPU/RAM/OS/Uptime), About-Tab XAML, Hyperlinks
+
+## Nächste Schritte (nach Windows-Test)
+- Windows-Test: git pull → dotnet run (Admin) — WinRing0-Treiber-Load beim 1. Monitor-Tab-Öffnen
+- SmartScreen: "Trotzdem ausführen" → einmalig
+- Issues für v2-Ideen anlegen (Sparklines, Power-Plan, Temp-Schwellen, Pagefile-Info)
