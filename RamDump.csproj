@@ -12,8 +12,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Version>1.0.0</Version>
-    <Description>Windows 11 RAM-Manager</Description>
-    <Authors>3motiBot</Authors>
+    <Description>Windows RAM-Manager &amp; System-Monitor</Description>
+    <Authors>Nawinn Gutzeit — stackschmiede.de</Authors>
+    <Company>Stackschmiede</Company>
   </PropertyGroup>
 
   <!-- Single-File Publish: dotnet publish -c Release -->
@@ -33,6 +34,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.4" />
   </ItemGroup>
 
 </Project>

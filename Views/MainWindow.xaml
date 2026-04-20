@@ -365,6 +365,10 @@
                                                                 CornerRadius="3" Padding="8,4" Margin="0,2"
                                                                 Cursor="Hand">
                                                             <StackPanel Orientation="Horizontal">
+                                                                <Image Source="{Binding Items[0].Icon}" Width="16" Height="16"
+                                                                       Margin="0,0,6,0" Opacity="0.85"
+                                                                       RenderOptions.BitmapScalingMode="HighQuality"
+                                                                       VerticalAlignment="Center"/>
                                                                 <TextBlock x:Name="Arrow" Text="▶" FontSize="9"
                                                                            Foreground="{StaticResource TextTertiaryBrush}"
                                                                            VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -417,7 +421,12 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="PID" Binding="{Binding Pid}" Width="70">
+                <DataGridTextColumn Header="PID" Binding="{Binding Pid}" Width="90">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
@@ -426,9 +435,14 @@
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
 
-                <DataGridTextColumn Header="Working Set" Width="120"
+                <DataGridTextColumn Header="Working Set" Width="140"
                                     Binding="{Binding WorkingSet, Converter={StaticResource BytesToReadable}}"
                                     SortMemberPath="WorkingSet">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -437,9 +451,14 @@
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
 
-                <DataGridTextColumn Header="Private" Width="120"
+                <DataGridTextColumn Header="Private" Width="140"
                                     Binding="{Binding PrivateBytes, Converter={StaticResource BytesToReadable}}"
                                     SortMemberPath="PrivateBytes">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
@@ -448,9 +467,14 @@
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
 
-                <DataGridTextColumn Header="Peak" Width="120"
+                <DataGridTextColumn Header="Peak" Width="140"
                                     Binding="{Binding PeakWorkingSet, Converter={StaticResource BytesToReadable}}"
                                     SortMemberPath="PeakWorkingSet">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
