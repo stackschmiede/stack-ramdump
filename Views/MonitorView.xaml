@@ -32,9 +32,7 @@
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                  Padding="0" Background="{StaticResource BgBaseBrush}">
-    <Grid>
+    <Grid Background="{StaticResource BgBaseBrush}" VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>  <!-- Toolbar -->
             <RowDefinition Height="Auto"/>  <!-- LHM Banner -->
@@ -564,5 +562,4 @@
             </Grid>
         </Border>
     </Grid>
-    </ScrollViewer>
 </UserControl>

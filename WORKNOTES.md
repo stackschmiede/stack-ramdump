@@ -1,46 +1,49 @@
 # ram-dump
 
 ## Stand
-- 2026-04-20 Session 3: Tab-Umbau vollständig abgeschlossen (alle 7 Phasen)
+- 2026-04-21 Session 4: RAM-Tab Redesign + Monitor Auto-Höhe fertig
 - Status: bereit zum Windows-Test — git pull → dotnet run (Admin)
+- Build: 0 Warnungen, 0 Fehler (Windows-dotnet via WSL)
 
 ## Struktur
 - .NET 8 WPF, MVVM (CommunityToolkit.Mvvm)
-- NuGet: CommunityToolkit.Mvvm 8.4.0, Hardcodet.NotifyIcon.Wpf 2.0.1
-- Nächste Session: + LibreHardwareMonitorLib 0.9.4
+- NuGet: CommunityToolkit.Mvvm 8.4.0, Hardcodet.NotifyIcon.Wpf 2.0.1, LibreHardwareMonitorLib 0.9.4
 
-## Was gebaut wurde (Session 2)
-- Diff-Update statt Clear+Rebuild (Performance)
-- Timer 5s, Icons nur für neue Prozesse
-- Groups collapsible (ToggleButton ▶/▼)
-- Groups starten collapsed
-- Win-Prozesse ausblenden (ShowSystemProcesses, default false)
-- IsSystemProcess via exe-Pfad C:\Windows\ + Namens-Fallback
+## Session 4 — Was gebaut wurde
+- Phase 1: ProcessClassifier + Category/Tag im VM (Browser/Dev/System/Other)
+- Phase 2: ActiveFilter (all|top|browser|dev|sys|crit), Multi-Select, SelectedProcesses, TrimSelected/KillSelected, 6 Counts (All/Top/Browser/Dev/System/Critical)
+- Phase 3: Converters — WsBarWidth (MultiBinding), ArcGeometry (PathGeometry), GroupBarWidth, GroupPct, WsLevelBrush, WsIsHeavy, StringEquals
+- Phase 4: RAM-Tab komplett neu — Hero (Donut+Spark+4 KPI-Cards), Primary/Secondary/Danger-Toolbar, 6 Filter-Chips (RadioButtons), DataGrid mit Microbars+Heavy-Badge+Status-Dot, Group-Header mit Bar+Pct-Badge, Footer mit Auswahl-Count + Trim/Kill
+- Phase 5: Status-Pulse-Dot (Storyboard ScaleX/Y, Forever)
+- Phase 6: Monitor-Auto-Höhe — ApplyTabSizing() beim Tab-Wechsel: SizeToContent.Height im Monitor, Restore ramHeight beim RAM. Äußerer ScrollViewer in MonitorView entfernt. RamWindowHeight persistiert separat.
+- Phase 7: MemoryCleanupService.KillProcessAsync (Process.Kill + WaitForExit) mit Blocked-Guard
 
-## v2 Features (fertig)
-- Exakter Cache via GetPerformanceInfo
-- Vorher/Nachher-Anzeige nach Cleanup
-- Prozess-Gruppierung (Toggle, Summen-Header, collapsible)
-- Top-Wachstum-Marker (▲ in Warning-Orange)
-- Prozess-Icons (gecached, Opacity 85%)
-- Shortcuts: F5, Ctrl+T, Ctrl+F, Ctrl+E
-- CSV Export, Settings-Persistenz, Tray-Icon
+## Zieldateien (angepasst)
+- Views/MainWindow.xaml — kompletter Rewrite RAM-Tab
+- Views/MainWindow.xaml.cs — _ramHeight, ApplyTabSizing, ProcessGrid_SelectionChanged, TrimCurrentRow_Click
+- Views/MonitorView.xaml — outer ScrollViewer entfernt (Grid VerticalAlignment=Top)
+- ViewModels/MainViewModel.cs — Filter, Counts, Selection, Commands
+- ViewModels/ProcessMemoryInfoViewModel.cs — Category/CategoryTag/IsSelected
+- Services/ProcessClassifier.cs (neu) — Name-Lookup-Tabelle
+- Services/MemoryCleanupService.cs — KillProcessAsync
+- Services/AppSettings.cs — RamWindowHeight, ActiveFilter
+- Converters/ — 7 neue Konverter (s.o.)
+
+## Windows-Test Checkliste
+1. `git pull && dotnet run` (Admin)
+2. RAM-Tab visuell: Donut-Arc bei Auslastung, Farbwechsel an Schwellen, KPI-Cards (Verfügbar/Cache/Commit/Standby), Hero-Sparkline (alle 5 s)
+3. Chips filtern, Counts aktualisieren, Multi-Select (Ctrl/Shift) aktiviert Footer-Buttons
+4. „Auswahl trimmen" → WS fallen; „Auswahl beenden" → Prozess weg (nach Bestätigung)
+5. Gruppierung: Header mit Bar + Pct-Badge
+6. Monitor-Tab: **keine leere untere Hälfte**, Fenster schrumpft auf Content-Höhe; Rückwechsel zu RAM: Höhe wiederhergestellt
+7. Edge: ohne Admin → Trim/Kill disabled; Filter „crit" ohne Match → leere Liste + „0 von N"
+
+## Bekannte Punkte / offen
+- SizeToContent-Quirk: sollte sauber greifen; falls nicht → `InvalidateMeasure()` vor `SizeToContent.Height` ergänzen
+- Pulse-Dot ScaleTransform geht bis 2.2 — kann minimal aus 10×10 Grid bluten, visuell ok
+- ProcessClassifier-Namen-Liste (~35 Einträge): bei Drift neue Tags pflegen
 
 ## Design
 - Icon: Resources/app-icon.svg + Resources/app.ico
-- Farbsystem: COLORS.md — Ocker (#D4A574) als Markenfarbe
-- ProgressBar 4 Stufen (60/80/92): Grün → Ocker → Orange → Rot
-
-## Session 3 — Was gebaut wurde
-- Phase 1: LHM 0.9.4 NuGet, Authors/Company/Description
-- Phase 2: Group-Icon (Items[0].Icon), PID→90, Work/Priv/Peak→140, Header rechtsbündig
-- Phase 3: HardwareSensorService (LHM + PerformanceCounter-Fallback, SensorSnapshot record)
-- Phase 4: MonitorViewModel (Timer-Lifecycle), CoreUsageViewModel, AppSettings erweitert
-- Phase 5: TabControl-Root (RAM|Monitor|About), TabItem/TabControl Styles in App.xaml
-- Phase 6: MonitorView (2×2 Grid, per-Core Balken, Pause/Intervall-Toolbar, LHM-Banner)
-- Phase 7: AboutViewModel (WMI CPU/GPU/RAM/OS/Uptime), About-Tab XAML, Hyperlinks
-
-## Nächste Schritte (nach Windows-Test)
-- Windows-Test: git pull → dotnet run (Admin) — WinRing0-Treiber-Load beim 1. Monitor-Tab-Öffnen
-- SmartScreen: "Trotzdem ausführen" → einmalig
-- Issues für v2-Ideen anlegen (Sparklines, Power-Plan, Temp-Schwellen, Pagefile-Info)
+- Farbsystem: COLORS.md — Ocker #D4A574 als Markenfarbe
+- Load-Level-Schwellen: 60 / 80 / 92 % (Grün → Ocker → Orange → Rot)

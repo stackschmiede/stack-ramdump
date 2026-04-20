@@ -20,6 +20,8 @@ public partial class MainViewModel : ObservableObject
     private readonly object _processLock = new();
     private Dictionary<int, long> _previousWorkingSets = new();
     private const long GrowthThresholdBytes = 50 * 1024 * 1024; // 50 MB
+    private const long TopThresholdBytes = 100 * 1024 * 1024; // 100 MB
+    private const long CriticalThresholdBytes = (long)(1.5 * 1024 * 1024 * 1024); // 1.5 GB
     private bool _suppressSettingsSave;
 
     [ObservableProperty]
@@ -38,12 +40,16 @@ public partial class MainViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(TrimAllCommand))]
     [NotifyCanExecuteChangedFor(nameof(ClearStandbyCommand))]
     [NotifyCanExecuteChangedFor(nameof(FullCleanupCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TrimSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(KillSelectedCommand))]
     private bool _isAdmin;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TrimAllCommand))]
     [NotifyCanExecuteChangedFor(nameof(ClearStandbyCommand))]
     [NotifyCanExecuteChangedFor(nameof(FullCleanupCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TrimSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(KillSelectedCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -58,7 +64,37 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _showSystemProcesses = false;
 
+    [ObservableProperty]
+    private string _activeFilter = "all";
+
+    [ObservableProperty]
+    private int _allCount;
+
+    [ObservableProperty]
+    private int _topCount;
+
+    [ObservableProperty]
+    private int _browserCount;
+
+    [ObservableProperty]
+    private int _devCount;
+
+    [ObservableProperty]
+    private int _systemCount;
+
+    [ObservableProperty]
+    private int _criticalCount;
+
+    [ObservableProperty]
+    private int _displayedCount;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(TrimSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(KillSelectedCommand))]
+    private int _selectedCount;
+
     public ObservableCollection<ProcessMemoryInfoViewModel> Processes { get; } = [];
+    public ObservableCollection<ProcessMemoryInfoViewModel> SelectedProcesses { get; } = [];
     public ICollectionView ProcessesView { get; }
     public MonitorViewModel Monitor { get; } = new();
     public AboutViewModel About { get; } = new();
@@ -86,7 +122,11 @@ public partial class MainViewModel : ObservableObject
         RefreshCommand.Execute(null);
     }
 
-    partial void OnSearchTextChanged(string value) => ProcessesView.Refresh();
+    partial void OnSearchTextChanged(string value)
+    {
+        ProcessesView.Refresh();
+        UpdateDisplayedCount();
+    }
 
     partial void OnAutoRefreshChanged(bool value)
     {
@@ -101,6 +141,7 @@ public partial class MainViewModel : ObservableObject
     partial void OnShowSystemProcessesChanged(bool value)
     {
         ProcessesView.Refresh();
+        UpdateDisplayedCount();
         SaveSettings();
     }
 
@@ -110,6 +151,13 @@ public partial class MainViewModel : ObservableObject
         if (value)
             ProcessesView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProcessMemoryInfoViewModel.Name)));
         ProcessesView.Refresh();
+        SaveSettings();
+    }
+
+    partial void OnActiveFilterChanged(string value)
+    {
+        ProcessesView.Refresh();
+        UpdateDisplayedCount();
         SaveSettings();
     }
 
@@ -124,9 +172,28 @@ public partial class MainViewModel : ObservableObject
     {
         if (obj is not ProcessMemoryInfoViewModel vm) return false;
         if (!ShowSystemProcesses && vm.IsSystemProcess) return false;
-        if (string.IsNullOrWhiteSpace(SearchText)) return true;
-        return vm.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
-            || vm.Pid.ToString().Contains(SearchText);
+
+        if (!string.IsNullOrWhiteSpace(SearchText)
+            && !vm.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
+            && !vm.Pid.ToString().Contains(SearchText))
+            return false;
+
+        return ActiveFilter switch
+        {
+            "top" => vm.WorkingSet >= TopThresholdBytes,
+            "browser" => vm.Category == ProcessCategory.Browser,
+            "dev" => vm.Category == ProcessCategory.Dev,
+            "sys" => vm.Category == ProcessCategory.System,
+            "crit" => vm.WorkingSet >= CriticalThresholdBytes
+                      || (vm.IsGrowing && vm.GrowthDelta >= 200 * 1024 * 1024),
+            _ => true,
+        };
+    }
+
+    [RelayCommand]
+    private void SetFilter(string filter)
+    {
+        ActiveFilter = string.IsNullOrWhiteSpace(filter) ? "all" : filter;
     }
 
     [RelayCommand]
@@ -194,7 +261,46 @@ public partial class MainViewModel : ObservableObject
         }
 
         ApplySort();
+        UpdateCounts();
+        UpdateDisplayedCount();
         SyncTopProcess();
+    }
+
+    private void UpdateCounts()
+    {
+        int all = 0, top = 0, browser = 0, dev = 0, sys = 0, crit = 0;
+        foreach (var p in Processes)
+        {
+            if (!ShowSystemProcesses && p.IsSystemProcess) continue;
+            all++;
+            if (p.WorkingSet >= TopThresholdBytes) top++;
+            if (p.Category == ProcessCategory.Browser) browser++;
+            if (p.Category == ProcessCategory.Dev) dev++;
+            if (p.IsSystemProcess) sys++;
+            if (p.WorkingSet >= CriticalThresholdBytes
+                || (p.IsGrowing && p.GrowthDelta >= 200 * 1024 * 1024)) crit++;
+        }
+        AllCount = all;
+        TopCount = top;
+        BrowserCount = browser;
+        DevCount = dev;
+        SystemCount = sys;
+        CriticalCount = crit;
+    }
+
+    private void UpdateDisplayedCount()
+    {
+        int count = 0;
+        foreach (var _ in ProcessesView) count++;
+        DisplayedCount = count;
+    }
+
+    public void UpdateSelection(IEnumerable<ProcessMemoryInfoViewModel> items)
+    {
+        SelectedProcesses.Clear();
+        foreach (var item in items)
+            SelectedProcesses.Add(item);
+        SelectedCount = SelectedProcesses.Count;
     }
 
     private void SyncTopProcess()
@@ -305,6 +411,79 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanActOnSelection))]
+    private async Task TrimSelectedAsync()
+    {
+        var targets = SelectedProcesses.ToList();
+        if (targets.Count == 0) return;
+
+        IsBusy = true;
+        int ok = 0, fail = 0;
+        StatusText = $"Trimme {targets.Count} Prozesse...";
+        try
+        {
+            foreach (var p in targets)
+            {
+                try
+                {
+                    var r = await MemoryCleanupService.TrimProcessAsync(p.Pid);
+                    if (r.ProcessesTrimmed > 0) ok++;
+                    else fail++;
+                }
+                catch
+                {
+                    fail++;
+                }
+            }
+            StatusText = $"Auswahl getrimmt: {ok} ok, {fail} fehlgeschlagen";
+            await RefreshAsync();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanActOnSelection))]
+    private async Task KillSelectedAsync()
+    {
+        var targets = SelectedProcesses.ToList();
+        if (targets.Count == 0) return;
+
+        var names = string.Join(", ", targets.Take(5).Select(p => p.Name));
+        if (targets.Count > 5) names += ", …";
+        var confirmed = await WeakReferenceMessenger.Default.Send(
+            new ConfirmationRequestMessage(
+                $"{targets.Count} Prozess(e) beenden?\n\n{names}\n\nUngespeicherte Daten gehen verloren."));
+        if (!confirmed) return;
+
+        IsBusy = true;
+        int ok = 0, fail = 0;
+        StatusText = $"Beende {targets.Count} Prozess(e)...";
+        try
+        {
+            foreach (var p in targets)
+            {
+                try
+                {
+                    var r = await MemoryCleanupService.KillProcessAsync(p.Pid);
+                    if (r.ProcessesTrimmed > 0) ok++;
+                    else fail++;
+                }
+                catch
+                {
+                    fail++;
+                }
+            }
+            StatusText = $"Beendet: {ok} ok, {fail} fehlgeschlagen";
+            await RefreshAsync();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     [RelayCommand]
     private void SortBy(string column)
     {
@@ -337,9 +516,9 @@ public partial class MainViewModel : ObservableObject
         };
         if (dlg.ShowDialog() != true) return;
 
-        var lines = new List<string> { "Name,PID,WorkingSet,PrivateBytes,PeakWorkingSet" };
+        var lines = new List<string> { "Name,PID,WorkingSet,PrivateBytes,PeakWorkingSet,Category" };
         foreach (var p in Processes)
-            lines.Add($"\"{p.Name}\",{p.Pid},{p.WorkingSet},{p.PrivateBytes},{p.PeakWorkingSet}");
+            lines.Add($"\"{p.Name}\",{p.Pid},{p.WorkingSet},{p.PrivateBytes},{p.PeakWorkingSet},{p.CategoryTag}");
 
         await File.WriteAllLinesAsync(dlg.FileName, lines, System.Text.Encoding.UTF8);
         StatusText = $"Exportiert: {Path.GetFileName(dlg.FileName)}";
@@ -352,6 +531,7 @@ public partial class MainViewModel : ObservableObject
     }
 
     private bool CanCleanup() => IsAdmin && !IsBusy;
+    private bool CanActOnSelection() => IsAdmin && !IsBusy && SelectedCount > 0;
 
     private void LoadSettings()
     {
@@ -365,6 +545,7 @@ public partial class MainViewModel : ObservableObject
             IsGrouped = s.IsGrouped;
             ShowSystemProcesses = s.ShowSystemProcesses;
             Monitor.RefreshIntervalSeconds = s.MonitorRefreshIntervalSeconds;
+            ActiveFilter = string.IsNullOrWhiteSpace(s.ActiveFilter) ? "all" : s.ActiveFilter;
         }
         finally
         {
@@ -375,22 +556,24 @@ public partial class MainViewModel : ObservableObject
     public void SaveSettings()
     {
         if (_suppressSettingsSave) return;
-        SettingsService.Save(new AppSettings
-        {
-            AutoRefresh = AutoRefresh,
-            SortColumn = SortColumn,
-            SortDirection = SortDirection.ToString(),
-            IsGrouped = IsGrouped,
-            ShowSystemProcesses = ShowSystemProcesses,
-            MonitorRefreshIntervalSeconds = Monitor.RefreshIntervalSeconds,
-        });
+        var s = SettingsService.Load();
+        s.AutoRefresh = AutoRefresh;
+        s.SortColumn = SortColumn;
+        s.SortDirection = SortDirection.ToString();
+        s.IsGrouped = IsGrouped;
+        s.ShowSystemProcesses = ShowSystemProcesses;
+        s.MonitorRefreshIntervalSeconds = Monitor.RefreshIntervalSeconds;
+        s.ActiveFilter = ActiveFilter;
+        SettingsService.Save(s);
     }
 
-    public void SaveWindowSettings(double width, double height, double left, double top)
+    public void SaveWindowSettings(double width, double height, double left, double top, double? ramHeight)
     {
         var s = SettingsService.Load();
         s.WindowWidth = width;
         s.WindowHeight = height;
+        if (ramHeight.HasValue && ramHeight.Value > 0)
+            s.RamWindowHeight = ramHeight.Value;
         s.WindowLeft = left;
         s.WindowTop = top;
         s.AutoRefresh = AutoRefresh;
@@ -399,6 +582,7 @@ public partial class MainViewModel : ObservableObject
         s.IsGrouped = IsGrouped;
         s.ShowSystemProcesses = ShowSystemProcesses;
         s.MonitorRefreshIntervalSeconds = Monitor.RefreshIntervalSeconds;
+        s.ActiveFilter = ActiveFilter;
         SettingsService.Save(s);
     }
 }

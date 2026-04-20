@@ -129,6 +129,50 @@ public class MemoryCleanupService
         };
     }
 
+    public static async Task<CleanupResult> KillProcessAsync(int pid)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                using var proc = Process.GetProcessById(pid);
+                if (BlockedProcesses.Contains(proc.ProcessName))
+                {
+                    return new CleanupResult
+                    {
+                        ProcessesFailed = 1,
+                        Summary = $"{proc.ProcessName} ist ein geschützter Systemprozess",
+                    };
+                }
+
+                string name = proc.ProcessName;
+                proc.Kill();
+                proc.WaitForExit(2000);
+                return new CleanupResult
+                {
+                    ProcessesTrimmed = 1,
+                    Summary = $"{name} (PID {pid}) beendet",
+                };
+            }
+            catch (ArgumentException)
+            {
+                return new CleanupResult
+                {
+                    ProcessesFailed = 1,
+                    Summary = $"Prozess {pid} nicht mehr vorhanden",
+                };
+            }
+            catch (Exception ex)
+            {
+                return new CleanupResult
+                {
+                    ProcessesFailed = 1,
+                    Summary = $"Konnte PID {pid} nicht beenden: {ex.Message}",
+                };
+            }
+        });
+    }
+
     public static async Task<CleanupResult> TrimProcessAsync(int pid)
     {
         return await Task.Run(() =>

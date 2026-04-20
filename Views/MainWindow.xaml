@@ -4,8 +4,8 @@
         xmlns:conv="clr-namespace:RamDump.Converters"
         xmlns:vm="clr-namespace:RamDump.ViewModels"
         xmlns:views="clr-namespace:RamDump.Views"
-        Title="RAM Dump" Width="900" Height="700"
-        MinWidth="700" MinHeight="500"
+        Title="RAM Dump" Width="1100" Height="760"
+        MinWidth="900" MinHeight="500"
         WindowStartupLocation="CenterScreen"
         Icon="/Resources/app.ico"
         Background="{StaticResource BgBaseBrush}"
@@ -26,466 +26,724 @@
         <conv:InvertBoolToVisibilityConverter x:Key="InvertBoolToVisibility"/>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
         <conv:GroupSumConverter x:Key="GroupSum"/>
+        <conv:GroupBarWidthConverter x:Key="GroupBarWidth"/>
+        <conv:GroupPctConverter x:Key="GroupPct"/>
+        <conv:ArcGeometryConverter x:Key="ArcGeometry"/>
+        <conv:WorkingSetToBarWidthConverter x:Key="WsBarWidth"/>
+        <conv:WorkingSetToLevelBrushConverter x:Key="WsLevelBrush"/>
+        <conv:WorkingSetIsHeavyConverter x:Key="WsIsHeavy"/>
+        <conv:StringEqualsConverter x:Key="StringEquals"/>
+        <conv:SparklinePointsConverter x:Key="Sparkline"/>
 
-        <!-- Destructive Button (Voll-Bereinigung) -->
+        <!-- Primary Button (Trim All) — gefüllt Ocker -->
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextOnAccentBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentHoverBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentPressedBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Destructive Button (Voll-Bereinigung, Kill) -->
         <Style x:Key="DestructiveButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
         </Style>
 
+        <!-- Chip Button (Filter) — benutzt RadioButton für Gruppenselection -->
+        <Style x:Key="Chip" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource BorderStrongBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource AccentSubtleBrush}"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Heavy-Badge (>500MB) -->
+        <Style x:Key="HeavyBadge" TargetType="Border">
+            <Setter Property="Background" Value="#22D98A5C"/>
+            <Setter Property="BorderBrush" Value="{StaticResource LoadHighBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Padding" Value="4,0"/>
+            <Setter Property="Margin" Value="6,0,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- IconButton (Refresh, Export) -->
+        <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="MinWidth" Value="36"/>
+        </Style>
+
     </Window.Resources>
 
     <TabControl x:Name="MainTabs" SelectionChanged="MainTabs_SelectionChanged">
+        <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+        <!--                                    RAM TAB                                       -->
+        <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
         <TabItem Header="RAM">
-        <Grid Margin="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+            <Grid Margin="16,14,16,14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- Admin-Warnung -->
+                    <RowDefinition Height="Auto"/>  <!-- Hero -->
+                    <RowDefinition Height="Auto"/>  <!-- Toolbar -->
+                    <RowDefinition Height="Auto"/>  <!-- Chips -->
+                    <RowDefinition Height="Auto"/>  <!-- Column-Header -->
+                    <RowDefinition Height="*"/>     <!-- List -->
+                    <RowDefinition Height="Auto"/>  <!-- Footer -->
+                </Grid.RowDefinitions>
 
-        <!-- Admin-Warnung -->
-        <Border Grid.Row="0" CornerRadius="6" Padding="10,8" Margin="0,0,0,12"
-                BorderBrush="{StaticResource WarningBrush}" BorderThickness="1"
-                Visibility="{Binding IsAdmin, Converter={StaticResource InvertBoolToVisibility}}">
-            <Border.Background>
-                <SolidColorBrush Color="{StaticResource WarningColor}" Opacity="0.12"/>
-            </Border.Background>
-            <TextBlock Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap">
-                <Run FontWeight="Bold" Text="Keine Admin-Rechte"/>
-                <Run Text=" — RAM-Analyse funktioniert, Bereinigung ist deaktiviert. Als Administrator starten für volle Funktionalität."/>
-            </TextBlock>
-        </Border>
+                <!-- ─────────── Admin-Warnung ─────────── -->
+                <Border Grid.Row="0" CornerRadius="6" Padding="10,8" Margin="0,0,0,12"
+                        BorderBrush="{StaticResource WarningBrush}" BorderThickness="1"
+                        Visibility="{Binding IsAdmin, Converter={StaticResource InvertBoolToVisibility}}">
+                    <Border.Background>
+                        <SolidColorBrush Color="{StaticResource WarningColor}" Opacity="0.12"/>
+                    </Border.Background>
+                    <TextBlock Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap">
+                        <Run FontWeight="Bold" Text="Keine Admin-Rechte"/>
+                        <Run Text=" — RAM-Analyse funktioniert, Bereinigung ist deaktiviert. Als Administrator starten für volle Funktionalität."/>
+                    </TextBlock>
+                </Border>
 
-        <!-- Dashboard Karten -->
-        <Grid Grid.Row="1" Margin="0,0,0,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+                <!-- ─────────── Hero: Donut + Sparkline/Meta + KPI-Grid ─────────── -->
+                <Border Grid.Row="1" Style="{StaticResource CardBorder}" Padding="24,18" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="320"/>
+                        </Grid.ColumnDefinitions>
 
-            <!-- RAM Nutzung -->
-            <Border Grid.Column="0" Style="{StaticResource CardBorder}">
-                <StackPanel>
-                    <TextBlock Text="RAM NUTZUNG" FontSize="11" FontWeight="SemiBold"
-                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock FontSize="28" FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                   Text="{Binding SystemMemory.UsedPhysical, Converter={StaticResource BytesToGb}}"/>
-                        <TextBlock FontSize="14" VerticalAlignment="Bottom" Margin="4,0,0,5"
-                                   Foreground="{StaticResource TextTertiaryBrush}">
-                            <Run Text="/"/>
-                            <Run Text="{Binding SystemMemory.TotalPhysical, Converter={StaticResource BytesToGb}, Mode=OneWay}"/>
-                            <Run Text="GB"/>
+                        <!-- Donut -->
+                        <Grid Grid.Column="0" Width="160" Height="160" HorizontalAlignment="Left">
+                            <!-- Track -->
+                            <Ellipse Width="132" Height="132"
+                                     Stroke="{StaticResource LoadTrackBrush}" StrokeThickness="14"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <!-- Arc -->
+                            <Path StrokeThickness="14"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  Stroke="{Binding SystemMemory.UsagePercent, Converter={StaticResource PercentToColor}}"
+                                  Data="{Binding SystemMemory.UsagePercent, Converter={StaticResource ArcGeometry}, ConverterParameter='80,80,66'}"/>
+                            <!-- Center labels -->
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock FontSize="24" FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"
+                                           Foreground="{Binding SystemMemory.UsagePercent, Converter={StaticResource PercentToColor}}"
+                                           Text="{Binding SystemMemory.UsagePercent, StringFormat={}{0:F0}%, Mode=OneWay}"/>
+                                <TextBlock FontSize="11" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource TextTertiaryBrush}">
+                                    <Run Text="{Binding SystemMemory.UsedPhysical, Converter={StaticResource BytesToGb}, Mode=OneWay}"/>
+                                    <Run Text="/"/>
+                                    <Run Text="{Binding SystemMemory.TotalPhysical, Converter={StaticResource BytesToGb}, Mode=OneWay}"/>
+                                    <Run Text="GB"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Middle: Label + Sparkline + Meta -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="24,0,24,0">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <TextBlock Text="RAM NUTZUNG" FontSize="10.5" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextTertiaryBrush}"
+                                           VerticalAlignment="Center"/>
+                                <Border CornerRadius="3" Padding="6,1" Margin="10,0,0,0"
+                                        Background="{StaticResource AccentSubtleBrush}">
+                                    <TextBlock FontSize="10" FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentBrush}">
+                                        <Run Text="TOP "/>
+                                        <Run Text="{Binding Monitor.TopProcessName, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </Border>
+                            </StackPanel>
+
+                            <Grid x:Name="RamHeroSpark" Height="64" Margin="0,4,0,6">
+                                <Polyline Stroke="{Binding SystemMemory.UsagePercent, Converter={StaticResource PercentToColor}}"
+                                          StrokeThickness="2" Stretch="None"
+                                          StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                                    <Polyline.Points>
+                                        <MultiBinding Converter="{StaticResource Sparkline}" ConverterParameter="100">
+                                            <Binding Path="Monitor.RamPctHistory"/>
+                                            <Binding ElementName="RamHeroSpark" Path="ActualWidth"/>
+                                            <Binding ElementName="RamHeroSpark" Path="ActualHeight"/>
+                                        </MultiBinding>
+                                    </Polyline.Points>
+                                </Polyline>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}">
+                                    <Run Text="Prozesse "/>
+                                    <Run Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Medium"
+                                         Text="{Binding AllCount, Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock FontSize="12" Foreground="{StaticResource TextDisabledBrush}" Margin="10,0,0,0" Text="·"/>
+                                <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="10,0,0,0">
+                                    <Run Text="Kritisch "/>
+                                    <Run Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Medium"
+                                         Text="{Binding CriticalCount, Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock FontSize="12" Foreground="{StaticResource TextDisabledBrush}" Margin="10,0,0,0" Text="·"/>
+                                <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="10,0,0,0">
+                                    <Run Text="Top (>100 MB) "/>
+                                    <Run Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Medium"
+                                         Text="{Binding TopCount, Mode=OneWay}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Right: KPI-Grid 2x2 -->
+                        <Grid Grid.Column="2" VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Column="0" Grid.Row="0" Style="{StaticResource CardBorder}"
+                                    Margin="0,0,8,8" Padding="10,8" Background="{StaticResource BgSurfaceBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="VERFÜGBAR" FontSize="9.5" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,3"/>
+                                    <TextBlock FontSize="16" FontWeight="SemiBold">
+                                        <Run Foreground="{StaticResource LoadOkBrush}"
+                                             Text="{Binding SystemMemory.AvailablePhysical, Converter={StaticResource BytesToGb}, Mode=OneWay}"/>
+                                        <Run Foreground="{StaticResource TextTertiaryBrush}" FontSize="11" Text=" GB"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Grid.Row="0" Style="{StaticResource CardBorder}"
+                                    Margin="0,0,0,8" Padding="10,8" Background="{StaticResource BgSurfaceBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="CACHE" FontSize="9.5" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,3"/>
+                                    <TextBlock FontSize="16" FontWeight="SemiBold">
+                                        <Run Foreground="{StaticResource InfoBrush}"
+                                             Text="{Binding SystemMemory.CachedBytes, Converter={StaticResource BytesToGb}, Mode=OneWay}"/>
+                                        <Run Foreground="{StaticResource TextTertiaryBrush}" FontSize="11" Text=" GB"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="0" Grid.Row="1" Style="{StaticResource CardBorder}"
+                                    Margin="0,0,8,0" Padding="10,8" Background="{StaticResource BgSurfaceBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="COMMIT" FontSize="9.5" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,3"/>
+                                    <TextBlock FontSize="16" FontWeight="SemiBold">
+                                        <Run Foreground="{StaticResource TextPrimaryBrush}"
+                                             Text="{Binding SystemMemory.CommitBytes, Converter={StaticResource BytesToGb}, Mode=OneWay}"/>
+                                        <Run Foreground="{StaticResource TextTertiaryBrush}" FontSize="11" Text=" GB"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Grid.Row="1" Style="{StaticResource CardBorder}"
+                                    Padding="10,8" Background="{StaticResource BgSurfaceBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="STANDBY" FontSize="9.5" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,3"/>
+                                    <TextBlock FontSize="16" FontWeight="SemiBold">
+                                        <Run Foreground="{StaticResource TextPrimaryBrush}"
+                                             Text="{Binding SystemMemory.StandbyBytes, Converter={StaticResource BytesToGb}, Mode=OneWay}"/>
+                                        <Run Foreground="{StaticResource TextTertiaryBrush}" FontSize="11" Text=" GB"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- ─────────── Toolbar ─────────── -->
+                <Grid Grid.Row="2" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Primary Actions -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <Button Style="{StaticResource PrimaryButton}"
+                                Content="Alles Trimmen"
+                                ToolTip="Ctrl+T"
+                                Command="{Binding TrimAllCommand}" Margin="0,0,8,0"/>
+                        <Button Content="Standby Leeren" Command="{Binding ClearStandbyCommand}" Margin="0,0,8,0"/>
+                        <Button Content="Voll-Bereinigung" Command="{Binding FullCleanupCommand}"
+                                Style="{StaticResource DestructiveButton}" Margin="0,0,16,0"/>
+                        <Border Width="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,4,10,4"/>
+                        <Button Style="{StaticResource IconButton}" Content="↻"
+                                ToolTip="Aktualisieren (F5)"
+                                Command="{Binding RefreshCommand}" Margin="0,0,6,0"/>
+                        <Button Style="{StaticResource IconButton}" Content="⇩"
+                                ToolTip="Export CSV (Ctrl+E)"
+                                Command="{Binding ExportCsvCommand}" Margin="0,0,12,0"/>
+
+                        <!-- Status-Dot + Text -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Grid Width="10" Height="10" Margin="0,0,6,0">
+                                <Ellipse Fill="{StaticResource LoadOkBrush}" Opacity="0.25"
+                                         RenderTransformOrigin="0.5,0.5">
+                                    <Ellipse.RenderTransform>
+                                        <ScaleTransform x:Name="PulseScale" ScaleX="1" ScaleY="1"/>
+                                    </Ellipse.RenderTransform>
+                                    <Ellipse.Triggers>
+                                        <EventTrigger RoutedEvent="Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation Storyboard.TargetName="PulseScale"
+                                                                     Storyboard.TargetProperty="ScaleX"
+                                                                     From="0.9" To="2.2" Duration="0:0:1.6" AutoReverse="True"/>
+                                                    <DoubleAnimation Storyboard.TargetName="PulseScale"
+                                                                     Storyboard.TargetProperty="ScaleY"
+                                                                     From="0.9" To="2.2" Duration="0:0:1.6" AutoReverse="True"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Ellipse.Triggers>
+                                </Ellipse>
+                                <Ellipse Fill="{StaticResource LoadOkBrush}" Width="6" Height="6"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock VerticalAlignment="Center"
+                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       Text="{Binding StatusText}"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Right: Toggles + Search -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <ToggleButton Content="Gruppieren" IsChecked="{Binding IsGrouped}" Margin="0,0,6,0"/>
+                        <ToggleButton Content="Win-Prozesse" IsChecked="{Binding ShowSystemProcesses}" Margin="0,0,6,0"/>
+                        <ToggleButton Content="Auto-Refresh" IsChecked="{Binding AutoRefresh}" Margin="0,0,10,0"/>
+
+                        <Grid Width="200">
+                            <TextBox x:Name="SearchBox"
+                                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                     VerticalContentAlignment="Center"/>
+                            <TextBlock Text="Suche (Ctrl+F)" IsHitTestVisible="False"
+                                       VerticalAlignment="Center" Margin="8,0,0,0"
+                                       Foreground="{StaticResource TextTertiaryBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+
+                <!-- ─────────── Filter Chips ─────────── -->
+                <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10">
+                    <RadioButton Style="{StaticResource Chip}" GroupName="RamFilter"
+                                 IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=all, Mode=TwoWay}">
+                        <TextBlock>
+                            <Run Text="Alle"/>
+                            <Run Text=" "/>
+                            <Run Text="{Binding AllCount, Mode=OneWay}" Foreground="{StaticResource TextTertiaryBrush}"/>
                         </TextBlock>
-                    </StackPanel>
-                    <ProgressBar Value="{Binding SystemMemory.UsagePercent, Mode=OneWay}"
-                                 Maximum="100"
-                                 Foreground="{Binding SystemMemory.UsagePercent, Converter={StaticResource PercentToColor}}"/>
-                    <TextBlock HorizontalAlignment="Right" Margin="0,6,0,0" FontSize="11"
-                               Foreground="{StaticResource TextTertiaryBrush}"
-                               Text="{Binding SystemMemory.UsagePercent, StringFormat={}{0:F1}%}"/>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource Chip}" GroupName="RamFilter"
+                                 IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=top, Mode=TwoWay}">
+                        <TextBlock>
+                            <Run Text="Top &gt; 100 MB"/>
+                            <Run Text=" "/>
+                            <Run Text="{Binding TopCount, Mode=OneWay}" Foreground="{StaticResource TextTertiaryBrush}"/>
+                        </TextBlock>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource Chip}" GroupName="RamFilter"
+                                 IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=browser, Mode=TwoWay}">
+                        <TextBlock>
+                            <Run Text="Browser"/>
+                            <Run Text=" "/>
+                            <Run Text="{Binding BrowserCount, Mode=OneWay}" Foreground="{StaticResource TextTertiaryBrush}"/>
+                        </TextBlock>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource Chip}" GroupName="RamFilter"
+                                 IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=dev, Mode=TwoWay}">
+                        <TextBlock>
+                            <Run Text="Dev-Tools"/>
+                            <Run Text=" "/>
+                            <Run Text="{Binding DevCount, Mode=OneWay}" Foreground="{StaticResource TextTertiaryBrush}"/>
+                        </TextBlock>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource Chip}" GroupName="RamFilter"
+                                 IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=sys, Mode=TwoWay}">
+                        <TextBlock>
+                            <Run Text="System"/>
+                            <Run Text=" "/>
+                            <Run Text="{Binding SystemCount, Mode=OneWay}" Foreground="{StaticResource TextTertiaryBrush}"/>
+                        </TextBlock>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource Chip}" GroupName="RamFilter"
+                                 IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=crit, Mode=TwoWay}">
+                        <TextBlock>
+                            <Run Text="Kritisch"/>
+                            <Run Text=" "/>
+                            <Run Text="{Binding CriticalCount, Mode=OneWay}" Foreground="{StaticResource LoadCriticalBrush}"/>
+                        </TextBlock>
+                    </RadioButton>
                 </StackPanel>
-            </Border>
 
-            <!-- Frei -->
-            <Border Grid.Column="2" Style="{StaticResource CardBorder}">
-                <StackPanel>
-                    <TextBlock Text="VERFÜGBAR" FontSize="11" FontWeight="SemiBold"
-                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8"/>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock FontSize="28" FontWeight="SemiBold"
-                                   Foreground="{StaticResource LoadOkBrush}"
-                                   Text="{Binding SystemMemory.AvailablePhysical, Converter={StaticResource BytesToGb}}"/>
-                        <TextBlock FontSize="14" VerticalAlignment="Bottom" Margin="4,0,0,5"
-                                   Foreground="{StaticResource TextTertiaryBrush}" Text="GB"/>
-                    </StackPanel>
-                    <TextBlock Margin="0,8,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
-                               Text="{Binding SystemMemory.AvailablePhysical, Converter={StaticResource BytesToReadable}}"/>
-                </StackPanel>
-            </Border>
+                <!-- ─────────── Prozessliste ─────────── -->
+                <DataGrid Grid.Row="5"
+                          x:Name="ProcessGrid"
+                          ItemsSource="{Binding ProcessesView}"
+                          SelectionChanged="ProcessGrid_SelectionChanged"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          CanUserReorderColumns="False"
+                          CanUserResizeColumns="True"
+                          CanUserSortColumns="True"
+                          SelectionMode="Extended"
+                          BorderThickness="0"
+                          RowHeaderWidth="0"
+                          HeadersVisibility="Column"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          EnableRowVirtualization="True">
 
-            <!-- Cache -->
-            <Border Grid.Column="4" Style="{StaticResource CardBorder}">
-                <StackPanel>
-                    <TextBlock Text="CACHE" FontSize="11" FontWeight="SemiBold"
-                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8"/>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock FontSize="28" FontWeight="SemiBold"
-                                   Foreground="{StaticResource InfoBrush}"
-                                   Text="{Binding SystemMemory.CachedBytes, Converter={StaticResource BytesToGb}}"/>
-                        <TextBlock FontSize="14" VerticalAlignment="Bottom" Margin="4,0,0,5"
-                                   Foreground="{StaticResource TextTertiaryBrush}" Text="GB"/>
-                    </StackPanel>
-                    <TextBlock Margin="0,8,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
-                               Text="{Binding SystemMemory.CachedBytes, Converter={StaticResource BytesToReadable}}"/>
-                </StackPanel>
-            </Border>
-        </Grid>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Diesen Prozess trimmen"
+                                      Click="TrimCurrentRow_Click"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
 
-        <!-- Aktions-Buttons (COLORS.md §9) -->
-        <WrapPanel Grid.Row="2" Margin="0,0,0,8">
-            <Button Content="Alles Trimmen (Ctrl+T)" Command="{Binding TrimAllCommand}" Margin="0,0,8,4"/>
-            <Button Content="Standby Leeren" Command="{Binding ClearStandbyCommand}" Margin="0,0,8,4"/>
-            <Button Content="Voll-Bereinigung" Command="{Binding FullCleanupCommand}"
-                    Style="{StaticResource DestructiveButton}" Margin="0,0,16,4"/>
-            <Button Content="Aktualisieren (F5)" Command="{Binding RefreshCommand}" Margin="0,0,8,4"/>
-            <Button Content="Export CSV (Ctrl+E)" Command="{Binding ExportCsvCommand}" Margin="0,0,8,4"/>
-        </WrapPanel>
+                    <DataGrid.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.ContainerStyle>
+                                <Style TargetType="{x:Type GroupItem}">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                <StackPanel>
+                                                    <ToggleButton x:Name="ExpandToggle" IsChecked="False"
+                                                                  OverridesDefaultStyle="True" Focusable="False">
+                                                        <ToggleButton.Template>
+                                                            <ControlTemplate TargetType="ToggleButton">
+                                                                <Border Background="{StaticResource BgRaisedBrush}"
+                                                                        CornerRadius="4" Padding="10,6" Margin="0,3,0,0"
+                                                                        Cursor="Hand">
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
 
-        <!-- Status + Suche -->
-        <Grid Grid.Row="3" Margin="0,0,0,8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="200"/>
-            </Grid.ColumnDefinitions>
+                                                                        <Image Grid.Column="0"
+                                                                               Source="{Binding Items[0].Icon}" Width="16" Height="16"
+                                                                               Margin="0,0,6,0" Opacity="0.85"
+                                                                               RenderOptions.BitmapScalingMode="HighQuality"
+                                                                               VerticalAlignment="Center"/>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   x:Name="Arrow" Text="▶" FontSize="9"
+                                                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                   VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                                        <TextBlock Grid.Column="2" Text="{Binding Name}" FontWeight="SemiBold"
+                                                                                   VerticalAlignment="Center"
+                                                                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                                        <TextBlock Grid.Column="3"
+                                                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                                                   VerticalAlignment="Center" Margin="8,0,0,0">
+                                                                            <TextBlock.Text>
+                                                                                <MultiBinding StringFormat="· {0} · Σ {1}">
+                                                                                    <Binding Path="ItemCount"/>
+                                                                                    <Binding Path="Items" Converter="{StaticResource GroupSum}" ConverterParameter="WorkingSet"/>
+                                                                                </MultiBinding>
+                                                                            </TextBlock.Text>
+                                                                        </TextBlock>
 
-            <TextBlock Grid.Column="0" VerticalAlignment="Center"
-                       Foreground="{StaticResource TextTertiaryBrush}"
-                       Text="{Binding StatusText}"/>
+                                                                        <!-- Group Micro-Bar -->
+                                                                        <Grid Grid.Column="4" x:Name="GroupBarTrack" Width="140" Height="4"
+                                                                              VerticalAlignment="Center" Margin="10,0,10,0">
+                                                                            <Border Background="{StaticResource LoadTrackBrush}" CornerRadius="2"/>
+                                                                            <Border HorizontalAlignment="Left" CornerRadius="2"
+                                                                                    Background="{StaticResource AccentBrush}">
+                                                                                <Border.Width>
+                                                                                    <MultiBinding Converter="{StaticResource GroupBarWidth}">
+                                                                                        <Binding Path="Items"/>
+                                                                                        <Binding Path="DataContext.SystemMemory.TotalPhysical"
+                                                                                                RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
+                                                                                        <Binding ElementName="GroupBarTrack" Path="ActualWidth"/>
+                                                                                    </MultiBinding>
+                                                                                </Border.Width>
+                                                                            </Border>
+                                                                        </Grid>
 
-            <ToggleButton Grid.Column="1" Content="Gruppieren"
-                          IsChecked="{Binding IsGrouped}" Margin="0,0,8,0"/>
+                                                                        <!-- Pct Badge -->
+                                                                        <Border Grid.Column="5" CornerRadius="3" Padding="5,1"
+                                                                                VerticalAlignment="Center"
+                                                                                Background="{StaticResource AccentSubtleBrush}">
+                                                                            <TextBlock FontSize="11" FontWeight="SemiBold"
+                                                                                       Foreground="{StaticResource AccentBrush}">
+                                                                                <TextBlock.Text>
+                                                                                    <MultiBinding Converter="{StaticResource GroupPct}">
+                                                                                        <Binding Path="Items"/>
+                                                                                        <Binding Path="DataContext.SystemMemory.TotalPhysical"
+                                                                                                RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
+                                                                                    </MultiBinding>
+                                                                                </TextBlock.Text>
+                                                                            </TextBlock>
+                                                                        </Border>
+                                                                    </Grid>
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsChecked" Value="True">
+                                                                        <Setter TargetName="Arrow" Property="Text" Value="▼"/>
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </ToggleButton.Template>
+                                                    </ToggleButton>
+                                                    <ItemsPresenter x:Name="ItemsHost"
+                                                                    Visibility="{Binding IsChecked, ElementName=ExpandToggle, Converter={StaticResource BoolToVisibility}}"/>
+                                                </StackPanel>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </GroupStyle.ContainerStyle>
+                        </GroupStyle>
+                    </DataGrid.GroupStyle>
 
-            <ToggleButton Grid.Column="2" Content="Win-Prozesse"
-                          IsChecked="{Binding ShowSystemProcesses}" Margin="0,0,8,0"/>
+                    <DataGrid.Columns>
+                        <!-- Status Dot -->
+                        <DataGridTemplateColumn Header="" Width="22" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                             HorizontalAlignment="Center"
+                                             Fill="{Binding WorkingSet, Converter={StaticResource WsLevelBrush}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
-            <ToggleButton Grid.Column="3" Content="Auto-Refresh"
-                          IsChecked="{Binding AutoRefresh}" Margin="0,0,8,0"/>
-
-            <Grid Grid.Column="4">
-                <TextBox x:Name="SearchBox"
-                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         VerticalContentAlignment="Center"/>
-                <TextBlock Text="Suche... (Ctrl+F)" IsHitTestVisible="False"
-                           VerticalAlignment="Center" Margin="8,0,0,0"
-                           Foreground="{StaticResource TextTertiaryBrush}">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </Grid>
-        </Grid>
-
-        <!-- Prozessliste -->
-        <DataGrid Grid.Row="4"
-                  ItemsSource="{Binding ProcessesView}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  CanUserReorderColumns="True"
-                  CanUserResizeColumns="True"
-                  CanUserSortColumns="True"
-                  SelectionMode="Single"
-                  BorderThickness="0"
-                  RowHeaderWidth="0"
-                  VirtualizingPanel.IsVirtualizing="True"
-                  VirtualizingPanel.VirtualizationMode="Recycling"
-                  EnableRowVirtualization="True">
-
-            <DataGrid.Template>
-                <ControlTemplate TargetType="DataGrid">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
-                        <ScrollViewer x:Name="DG_ScrollViewer" Focusable="False">
-                            <ScrollViewer.Template>
-                                <ControlTemplate TargetType="ScrollViewer">
+                        <!-- Name + Icon + Heavy Badge + Microbar -->
+                        <DataGridTemplateColumn Header="Name" Width="*" MinWidth="240" SortMemberPath="Name">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
                                     <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
-
-                                        <DataGridColumnHeadersPresenter x:Name="PART_ColumnHeadersPresenter"
-                                            Grid.Column="0" Grid.Row="0"
-                                            Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Column}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
-
-                                        <ScrollContentPresenter x:Name="PART_ScrollContentPresenter"
-                                            Grid.Column="0" Grid.Row="1"
-                                            CanContentScroll="{TemplateBinding CanContentScroll}"/>
-
-                                        <!-- Vertical ScrollBar (dark) -->
-                                        <ScrollBar x:Name="PART_VerticalScrollBar"
-                                            Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
-                                            Orientation="Vertical" Width="10"
-                                            Maximum="{TemplateBinding ScrollableHeight}"
-                                            ViewportSize="{TemplateBinding ViewportHeight}"
-                                            Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                            Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}">
-                                            <ScrollBar.Template>
-                                                <ControlTemplate TargetType="ScrollBar">
-                                                    <Border Background="{StaticResource BgSurfaceBrush}">
-                                                        <Track x:Name="PART_Track" IsDirectionReversed="True">
-                                                            <Track.DecreaseRepeatButton>
-                                                                <RepeatButton Command="ScrollBar.PageUpCommand"
-                                                                    OverridesDefaultStyle="True" Focusable="False">
-                                                                    <RepeatButton.Template>
-                                                                        <ControlTemplate><Border Background="Transparent"/></ControlTemplate>
-                                                                    </RepeatButton.Template>
-                                                                </RepeatButton>
-                                                            </Track.DecreaseRepeatButton>
-                                                            <Track.Thumb>
-                                                                <Thumb OverridesDefaultStyle="True" Margin="2">
-                                                                    <Thumb.Template>
-                                                                        <ControlTemplate TargetType="Thumb">
-                                                                            <Border x:Name="tb" CornerRadius="4"
-                                                                                    Background="{StaticResource BorderDefaultBrush}"/>
-                                                                            <ControlTemplate.Triggers>
-                                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                                    <Setter TargetName="tb" Property="Background"
-                                                                                            Value="{StaticResource BorderStrongBrush}"/>
-                                                                                </Trigger>
-                                                                            </ControlTemplate.Triggers>
-                                                                        </ControlTemplate>
-                                                                    </Thumb.Template>
-                                                                </Thumb>
-                                                            </Track.Thumb>
-                                                            <Track.IncreaseRepeatButton>
-                                                                <RepeatButton Command="ScrollBar.PageDownCommand"
-                                                                    OverridesDefaultStyle="True" Focusable="False">
-                                                                    <RepeatButton.Template>
-                                                                        <ControlTemplate><Border Background="Transparent"/></ControlTemplate>
-                                                                    </RepeatButton.Template>
-                                                                </RepeatButton>
-                                                            </Track.IncreaseRepeatButton>
-                                                        </Track>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </ScrollBar.Template>
-                                        </ScrollBar>
-
-                                        <!-- Horizontal ScrollBar (dark) -->
-                                        <ScrollBar x:Name="PART_HorizontalScrollBar"
-                                            Grid.Column="0" Grid.Row="2"
-                                            Orientation="Horizontal" Height="10"
-                                            Maximum="{TemplateBinding ScrollableWidth}"
-                                            ViewportSize="{TemplateBinding ViewportWidth}"
-                                            Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                            Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}">
-                                            <ScrollBar.Template>
-                                                <ControlTemplate TargetType="ScrollBar">
-                                                    <Border Background="{StaticResource BgSurfaceBrush}">
-                                                        <Track x:Name="PART_Track" IsDirectionReversed="False">
-                                                            <Track.DecreaseRepeatButton>
-                                                                <RepeatButton Command="ScrollBar.PageLeftCommand"
-                                                                    OverridesDefaultStyle="True" Focusable="False">
-                                                                    <RepeatButton.Template>
-                                                                        <ControlTemplate><Border Background="Transparent"/></ControlTemplate>
-                                                                    </RepeatButton.Template>
-                                                                </RepeatButton>
-                                                            </Track.DecreaseRepeatButton>
-                                                            <Track.Thumb>
-                                                                <Thumb OverridesDefaultStyle="True" Margin="2">
-                                                                    <Thumb.Template>
-                                                                        <ControlTemplate TargetType="Thumb">
-                                                                            <Border x:Name="tb" CornerRadius="4"
-                                                                                    Background="{StaticResource BorderDefaultBrush}"/>
-                                                                            <ControlTemplate.Triggers>
-                                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                                    <Setter TargetName="tb" Property="Background"
-                                                                                            Value="{StaticResource BorderStrongBrush}"/>
-                                                                                </Trigger>
-                                                                            </ControlTemplate.Triggers>
-                                                                        </ControlTemplate>
-                                                                    </Thumb.Template>
-                                                                </Thumb>
-                                                            </Track.Thumb>
-                                                            <Track.IncreaseRepeatButton>
-                                                                <RepeatButton Command="ScrollBar.PageRightCommand"
-                                                                    OverridesDefaultStyle="True" Focusable="False">
-                                                                    <RepeatButton.Template>
-                                                                        <ControlTemplate><Border Background="Transparent"/></ControlTemplate>
-                                                                    </RepeatButton.Template>
-                                                                </RepeatButton>
-                                                            </Track.IncreaseRepeatButton>
-                                                        </Track>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </ScrollBar.Template>
-                                        </ScrollBar>
-                                    </Grid>
-                                </ControlTemplate>
-                            </ScrollViewer.Template>
-                            <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                        </ScrollViewer>
-                    </Border>
-                </ControlTemplate>
-            </DataGrid.Template>
-
-            <DataGrid.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Diesen Prozess trimmen"
-                              Command="{Binding TrimProcessCommand}"
-                              CommandParameter="{Binding ProcessesView/}"/>
-                </ContextMenu>
-            </DataGrid.ContextMenu>
-
-            <DataGrid.GroupStyle>
-                <GroupStyle>
-                    <GroupStyle.ContainerStyle>
-                        <Style TargetType="{x:Type GroupItem}">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type GroupItem}">
-                                        <StackPanel>
-                                            <ToggleButton x:Name="ExpandToggle" IsChecked="False"
-                                                          OverridesDefaultStyle="True" Focusable="False">
-                                                <ToggleButton.Template>
-                                                    <ControlTemplate TargetType="ToggleButton">
-                                                        <Border Background="{StaticResource BgRaisedBrush}"
-                                                                CornerRadius="3" Padding="8,4" Margin="0,2"
-                                                                Cursor="Hand">
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <Image Source="{Binding Items[0].Icon}" Width="16" Height="16"
-                                                                       Margin="0,0,6,0" Opacity="0.85"
-                                                                       RenderOptions.BitmapScalingMode="HighQuality"
-                                                                       VerticalAlignment="Center"/>
-                                                                <TextBlock x:Name="Arrow" Text="▶" FontSize="9"
-                                                                           Foreground="{StaticResource TextTertiaryBrush}"
-                                                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
-                                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
-                                                                <TextBlock Foreground="{StaticResource TextTertiaryBrush}" Margin="8,0,0,0">
-                                                                    <TextBlock.Text>
-                                                                        <MultiBinding StringFormat="({0} — {1})">
-                                                                            <Binding Path="ItemCount"/>
-                                                                            <Binding Path="Items" Converter="{StaticResource GroupSum}" ConverterParameter="WorkingSet"/>
-                                                                        </MultiBinding>
-                                                                    </TextBlock.Text>
-                                                                </TextBlock>
-                                                            </StackPanel>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsChecked" Value="True">
-                                                                <Setter TargetName="Arrow" Property="Text" Value="▼"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </ToggleButton.Template>
-                                            </ToggleButton>
-                                            <ItemsPresenter x:Name="ItemsHost"
-                                                            Visibility="{Binding IsChecked, ElementName=ExpandToggle, Converter={StaticResource BoolToVisibility}}"/>
+                                        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,6,0"
+                                                   Opacity="0.85"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            <TextBlock Text="▲" Margin="0,0,4,0"
+                                                       Foreground="{StaticResource WarningBrush}"
+                                                       Visibility="{Binding IsGrowing, Converter={StaticResource BoolToVisibility}}"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium"
+                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                       VerticalAlignment="Center"/>
+                                            <Border Style="{StaticResource HeavyBadge}"
+                                                    Visibility="{Binding WorkingSet, Converter={StaticResource WsIsHeavy}}">
+                                                <TextBlock Text="HEAVY" FontSize="9" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource LoadHighBrush}"/>
+                                            </Border>
                                         </StackPanel>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </GroupStyle.ContainerStyle>
-                </GroupStyle>
-            </DataGrid.GroupStyle>
+                                        <!-- Microbar -->
+                                        <Grid Grid.Row="1" x:Name="MicroTrack" Height="3" Margin="22,3,10,0"
+                                              HorizontalAlignment="Stretch">
+                                            <Border Background="{StaticResource LoadTrackBrush}" CornerRadius="1.5"/>
+                                            <Border HorizontalAlignment="Left" CornerRadius="1.5"
+                                                    Background="{Binding WorkingSet, Converter={StaticResource WsLevelBrush}}">
+                                                <Border.Width>
+                                                    <MultiBinding Converter="{StaticResource WsBarWidth}">
+                                                        <Binding Path="WorkingSet"/>
+                                                        <Binding Path="DataContext.SystemMemory.TotalPhysical"
+                                                                RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
+                                                        <Binding ElementName="MicroTrack" Path="ActualWidth"/>
+                                                    </MultiBinding>
+                                                </Border.Width>
+                                            </Border>
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
-            <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Name" Width="*" MinWidth="200" SortMemberPath="Name">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,6,0"
-                                       Opacity="0.85"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Text="▲" Margin="0,0,4,0"
-                                           Foreground="{StaticResource WarningBrush}"
-                                           Visibility="{Binding IsGrowing, Converter={StaticResource BoolToVisibility}}"/>
-                                <TextBlock Text="{Binding Name}" FontWeight="Medium"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="PID" Binding="{Binding Pid}" Width="80">
+                            <DataGridTextColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                                </Style>
+                            </DataGridTextColumn.HeaderStyle>
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                    <Setter Property="TextAlignment" Value="Right"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
-                <DataGridTextColumn Header="PID" Binding="{Binding Pid}" Width="90">
-                    <DataGridTextColumn.HeaderStyle>
-                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-                            <Setter Property="TextAlignment" Value="Right"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
+                        <DataGridTextColumn Header="Working Set" Width="130"
+                                            Binding="{Binding WorkingSet, Converter={StaticResource BytesToReadable}}"
+                                            SortMemberPath="WorkingSet">
+                            <DataGridTextColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                                </Style>
+                            </DataGridTextColumn.HeaderStyle>
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                    <Setter Property="TextAlignment" Value="Right"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
-                <DataGridTextColumn Header="Working Set" Width="140"
-                                    Binding="{Binding WorkingSet, Converter={StaticResource BytesToReadable}}"
-                                    SortMemberPath="WorkingSet">
-                    <DataGridTextColumn.HeaderStyle>
-                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-                            <Setter Property="TextAlignment" Value="Right"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
+                        <DataGridTextColumn Header="Private" Width="130"
+                                            Binding="{Binding PrivateBytes, Converter={StaticResource BytesToReadable}}"
+                                            SortMemberPath="PrivateBytes">
+                            <DataGridTextColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                                </Style>
+                            </DataGridTextColumn.HeaderStyle>
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                    <Setter Property="TextAlignment" Value="Right"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
-                <DataGridTextColumn Header="Private" Width="140"
-                                    Binding="{Binding PrivateBytes, Converter={StaticResource BytesToReadable}}"
-                                    SortMemberPath="PrivateBytes">
-                    <DataGridTextColumn.HeaderStyle>
-                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-                            <Setter Property="TextAlignment" Value="Right"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
+                        <DataGridTextColumn Header="Peak" Width="110"
+                                            Binding="{Binding PeakWorkingSet, Converter={StaticResource BytesToReadable}}"
+                                            SortMemberPath="PeakWorkingSet">
+                            <DataGridTextColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                                </Style>
+                            </DataGridTextColumn.HeaderStyle>
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                    <Setter Property="TextAlignment" Value="Right"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
 
-                <DataGridTextColumn Header="Peak" Width="140"
-                                    Binding="{Binding PeakWorkingSet, Converter={StaticResource BytesToReadable}}"
-                                    SortMemberPath="PeakWorkingSet">
-                    <DataGridTextColumn.HeaderStyle>
-                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-                            <Setter Property="TextAlignment" Value="Right"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-            </DataGrid.Columns>
-        </DataGrid>
-    </Grid>
+                <!-- ─────────── Footer (Selection + Multi-Actions) ─────────── -->
+                <Grid Grid.Row="6" Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                               Foreground="{StaticResource TextSecondaryBrush}">
+                        <Run Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold"
+                             Text="{Binding SelectedCount, Mode=OneWay}"/>
+                        <Run Text=" ausgewählt"/>
+                    </TextBlock>
+
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center"
+                               Foreground="{StaticResource TextTertiaryBrush}">
+                        <Run Text="Anzeige "/>
+                        <Run Text="{Binding DisplayedCount, Mode=OneWay}"/>
+                        <Run Text=" von "/>
+                        <Run Text="{Binding AllCount, Mode=OneWay}"/>
+                    </TextBlock>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button Content="Auswahl trimmen" Command="{Binding TrimSelectedCommand}"
+                                Margin="0,0,8,0"/>
+                        <Button Content="Auswahl beenden" Command="{Binding KillSelectedCommand}"
+                                Style="{StaticResource DestructiveButton}"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
         </TabItem>
 
+        <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+        <!--                                  MONITOR TAB                                     -->
+        <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
         <TabItem Header="Monitor">
             <views:MonitorView/>
         </TabItem>
 
+        <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+        <!--                                  ABOUT TAB                                       -->
+        <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
         <TabItem Header="About">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel MaxWidth="520" HorizontalAlignment="Center"
@@ -510,10 +768,8 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- Divider -->
                     <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,0,0,20"/>
 
-                    <!-- Entwickler -->
                     <TextBlock Text="ENTWICKLER" FontSize="11" FontWeight="SemiBold"
                                Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,10"/>
                     <TextBlock Text="Nawinn Gutzeit" FontSize="14"
@@ -533,7 +789,6 @@
                         </Hyperlink>
                     </TextBlock>
 
-                    <!-- System-Infos -->
                     <TextBlock Text="SYSTEM" FontSize="11" FontWeight="SemiBold"
                                Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,10"/>
                     <Grid Margin="0,0,0,24">
@@ -583,7 +838,6 @@
                                    Foreground="{StaticResource TextPrimaryBrush}"/>
                     </Grid>
 
-                    <!-- Dependencies -->
                     <TextBlock Text="ABHÄNGIGKEITEN" FontSize="11" FontWeight="SemiBold"
                                Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,10"/>
                     <TextBlock Foreground="{StaticResource TextSecondaryBrush}" LineHeight="22"
@@ -594,7 +848,6 @@
                         <Run Text="· LibreHardwareMonitorLib 0.9.4"/>
                     </TextBlock>
 
-                    <!-- Footer -->
                     <Border Height="1" Background="{StaticResource BorderSubtleBrush}" Margin="0,0,0,16"/>
                     <TextBlock Text="© 2026 Stackschmiede · MIT License"
                                Foreground="{StaticResource TextTertiaryBrush}" FontSize="12"
