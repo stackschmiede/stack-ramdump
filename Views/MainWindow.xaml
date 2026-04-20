@@ -7,8 +7,8 @@
         MinWidth="700" MinHeight="500"
         WindowStartupLocation="CenterScreen"
         Icon="/Resources/app.ico"
-        Background="{StaticResource BaseBrush}"
-        Foreground="{StaticResource TextBrush}"
+        Background="{StaticResource BgBaseBrush}"
+        Foreground="{StaticResource TextPrimaryBrush}"
         FontFamily="Segoe UI" FontSize="13">
 
     <Window.InputBindings>
@@ -26,24 +26,20 @@
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
         <conv:GroupSumConverter x:Key="GroupSum"/>
 
-        <!-- Accent Button Style -->
-        <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Background">
-                <Setter.Value>
-                    <SolidColorBrush Color="{StaticResource LavenderColor}" Opacity="0.2"/>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="BorderBrush" Value="{StaticResource LavenderBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource LavenderBrush}"/>
+        <!-- Destructive Button (Voll-Bereinigung) -->
+        <Style x:Key="DestructiveButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
         </Style>
 
-        <!-- Card Border Style -->
+        <!-- KPI-Card Border (COLORS.md §7) -->
         <Style x:Key="CardBorder" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource MantelBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="Background" Value="{StaticResource BgRaisedBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Padding" Value="16,14"/>
         </Style>
     </Window.Resources>
 
@@ -58,11 +54,12 @@
 
         <!-- Admin-Warnung -->
         <Border Grid.Row="0" CornerRadius="6" Padding="10,8" Margin="0,0,0,12"
+                BorderBrush="{StaticResource WarningBrush}" BorderThickness="1"
                 Visibility="{Binding IsAdmin, Converter={StaticResource InvertBoolToVisibility}}">
             <Border.Background>
-                <SolidColorBrush Color="{StaticResource YellowColor}" Opacity="0.15"/>
+                <SolidColorBrush Color="{StaticResource WarningColor}" Opacity="0.12"/>
             </Border.Background>
-            <TextBlock Foreground="{StaticResource TextBrush}" TextWrapping="Wrap">
+            <TextBlock Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap">
                 <Run FontWeight="Bold" Text="Keine Admin-Rechte"/>
                 <Run Text=" — RAM-Analyse funktioniert, Bereinigung ist deaktiviert. Als Administrator starten für volle Funktionalität."/>
             </TextBlock>
@@ -82,12 +79,13 @@
             <Border Grid.Column="0" Style="{StaticResource CardBorder}">
                 <StackPanel>
                     <TextBlock Text="RAM NUTZUNG" FontSize="11" FontWeight="SemiBold"
-                               Foreground="{StaticResource SubTextBrush}" Margin="0,0,0,8"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                        <TextBlock FontSize="24" FontWeight="Bold"
+                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock FontSize="28" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
                                    Text="{Binding SystemMemory.UsedPhysical, Converter={StaticResource BytesToGb}}"/>
-                        <TextBlock FontSize="14" VerticalAlignment="Bottom" Margin="4,0,0,3"
-                                   Foreground="{StaticResource SubTextBrush}">
+                        <TextBlock FontSize="14" VerticalAlignment="Bottom" Margin="4,0,0,5"
+                                   Foreground="{StaticResource TextTertiaryBrush}">
                             <Run Text="/"/>
                             <Run Text="{Binding SystemMemory.TotalPhysical, Converter={StaticResource BytesToGb}, Mode=OneWay}"/>
                             <Run Text="GB"/>
@@ -96,8 +94,8 @@
                     <ProgressBar Value="{Binding SystemMemory.UsagePercent, Mode=OneWay}"
                                  Maximum="100"
                                  Foreground="{Binding SystemMemory.UsagePercent, Converter={StaticResource PercentToColor}}"/>
-                    <TextBlock HorizontalAlignment="Right" Margin="0,4,0,0" FontSize="11"
-                               Foreground="{StaticResource SubTextBrush}"
+                    <TextBlock HorizontalAlignment="Right" Margin="0,6,0,0" FontSize="11"
+                               Foreground="{StaticResource TextTertiaryBrush}"
                                Text="{Binding SystemMemory.UsagePercent, StringFormat={}{0:F1}%}"/>
                 </StackPanel>
             </Border>
@@ -106,14 +104,15 @@
             <Border Grid.Column="2" Style="{StaticResource CardBorder}">
                 <StackPanel>
                     <TextBlock Text="VERFÜGBAR" FontSize="11" FontWeight="SemiBold"
-                               Foreground="{StaticResource SubTextBrush}" Margin="0,0,0,8"/>
+                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8"/>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock FontSize="24" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"
+                        <TextBlock FontSize="28" FontWeight="SemiBold"
+                                   Foreground="{StaticResource LoadOkBrush}"
                                    Text="{Binding SystemMemory.AvailablePhysical, Converter={StaticResource BytesToGb}}"/>
-                        <TextBlock FontSize="14" VerticalAlignment="Bottom" Margin="4,0,0,3"
-                                   Foreground="{StaticResource SubTextBrush}" Text="GB"/>
+                        <TextBlock FontSize="14" VerticalAlignment="Bottom" Margin="4,0,0,5"
+                                   Foreground="{StaticResource TextTertiaryBrush}" Text="GB"/>
                     </StackPanel>
-                    <TextBlock Margin="0,8,0,0" FontSize="11" Foreground="{StaticResource SubTextBrush}"
+                    <TextBlock Margin="0,8,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
                                Text="{Binding SystemMemory.AvailablePhysical, Converter={StaticResource BytesToReadable}}"/>
                 </StackPanel>
             </Border>
@@ -122,27 +121,26 @@
             <Border Grid.Column="4" Style="{StaticResource CardBorder}">
                 <StackPanel>
                     <TextBlock Text="CACHE" FontSize="11" FontWeight="SemiBold"
-                               Foreground="{StaticResource SubTextBrush}" Margin="0,0,0,8"/>
+                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8"/>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock FontSize="24" FontWeight="Bold" Foreground="{StaticResource BlueBrush}"
+                        <TextBlock FontSize="28" FontWeight="SemiBold"
+                                   Foreground="{StaticResource InfoBrush}"
                                    Text="{Binding SystemMemory.CachedBytes, Converter={StaticResource BytesToGb}}"/>
-                        <TextBlock FontSize="14" VerticalAlignment="Bottom" Margin="4,0,0,3"
-                                   Foreground="{StaticResource SubTextBrush}" Text="GB"/>
+                        <TextBlock FontSize="14" VerticalAlignment="Bottom" Margin="4,0,0,5"
+                                   Foreground="{StaticResource TextTertiaryBrush}" Text="GB"/>
                     </StackPanel>
-                    <TextBlock Margin="0,8,0,0" FontSize="11" Foreground="{StaticResource SubTextBrush}"
+                    <TextBlock Margin="0,8,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
                                Text="{Binding SystemMemory.CachedBytes, Converter={StaticResource BytesToReadable}}"/>
                 </StackPanel>
             </Border>
         </Grid>
 
-        <!-- Aktions-Buttons -->
+        <!-- Aktions-Buttons (COLORS.md §9) -->
         <WrapPanel Grid.Row="2" Margin="0,0,0,8">
-            <Button Content="Alles Trimmen (Ctrl+T)" Command="{Binding TrimAllCommand}"
-                    Style="{StaticResource AccentButton}" Margin="0,0,8,4"/>
-            <Button Content="Standby Leeren" Command="{Binding ClearStandbyCommand}"
-                    Style="{StaticResource AccentButton}" Margin="0,0,8,4"/>
+            <Button Content="Alles Trimmen (Ctrl+T)" Command="{Binding TrimAllCommand}" Margin="0,0,8,4"/>
+            <Button Content="Standby Leeren" Command="{Binding ClearStandbyCommand}" Margin="0,0,8,4"/>
             <Button Content="Voll-Bereinigung" Command="{Binding FullCleanupCommand}"
-                    Style="{StaticResource AccentButton}" Margin="0,0,16,4"/>
+                    Style="{StaticResource DestructiveButton}" Margin="0,0,16,4"/>
             <Button Content="Aktualisieren (F5)" Command="{Binding RefreshCommand}" Margin="0,0,8,4"/>
             <Button Content="Export CSV (Ctrl+E)" Command="{Binding ExportCsvCommand}" Margin="0,0,8,4"/>
         </WrapPanel>
@@ -157,7 +155,7 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Grid.Column="0" VerticalAlignment="Center"
-                       Foreground="{StaticResource SubTextBrush}"
+                       Foreground="{StaticResource TextTertiaryBrush}"
                        Text="{Binding StatusText}"/>
 
             <ToggleButton Grid.Column="1" Content="Gruppieren"
@@ -172,7 +170,7 @@
                          VerticalContentAlignment="Center"/>
                 <TextBlock Text="Suche... (Ctrl+F)" IsHitTestVisible="False"
                            VerticalAlignment="Center" Margin="8,0,0,0"
-                           Foreground="{StaticResource OverlayBrush}">
+                           Foreground="{StaticResource TextTertiaryBrush}">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -240,7 +238,7 @@
                                             Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}">
                                             <ScrollBar.Template>
                                                 <ControlTemplate TargetType="ScrollBar">
-                                                    <Border Background="{StaticResource CrustBrush}">
+                                                    <Border Background="{StaticResource BgSurfaceBrush}">
                                                         <Track x:Name="PART_Track" IsDirectionReversed="True">
                                                             <Track.DecreaseRepeatButton>
                                                                 <RepeatButton Command="ScrollBar.PageUpCommand"
@@ -255,11 +253,11 @@
                                                                     <Thumb.Template>
                                                                         <ControlTemplate TargetType="Thumb">
                                                                             <Border x:Name="tb" CornerRadius="4"
-                                                                                    Background="{StaticResource Surface1Brush}"/>
+                                                                                    Background="{StaticResource BorderDefaultBrush}"/>
                                                                             <ControlTemplate.Triggers>
                                                                                 <Trigger Property="IsMouseOver" Value="True">
                                                                                     <Setter TargetName="tb" Property="Background"
-                                                                                            Value="{StaticResource OverlayBrush}"/>
+                                                                                            Value="{StaticResource BorderStrongBrush}"/>
                                                                                 </Trigger>
                                                                             </ControlTemplate.Triggers>
                                                                         </ControlTemplate>
@@ -290,7 +288,7 @@
                                             Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}">
                                             <ScrollBar.Template>
                                                 <ControlTemplate TargetType="ScrollBar">
-                                                    <Border Background="{StaticResource CrustBrush}">
+                                                    <Border Background="{StaticResource BgSurfaceBrush}">
                                                         <Track x:Name="PART_Track" IsDirectionReversed="False">
                                                             <Track.DecreaseRepeatButton>
                                                                 <RepeatButton Command="ScrollBar.PageLeftCommand"
@@ -305,11 +303,11 @@
                                                                     <Thumb.Template>
                                                                         <ControlTemplate TargetType="Thumb">
                                                                             <Border x:Name="tb" CornerRadius="4"
-                                                                                    Background="{StaticResource Surface1Brush}"/>
+                                                                                    Background="{StaticResource BorderDefaultBrush}"/>
                                                                             <ControlTemplate.Triggers>
                                                                                 <Trigger Property="IsMouseOver" Value="True">
                                                                                     <Setter TargetName="tb" Property="Background"
-                                                                                            Value="{StaticResource OverlayBrush}"/>
+                                                                                            Value="{StaticResource BorderStrongBrush}"/>
                                                                                 </Trigger>
                                                                             </ControlTemplate.Triggers>
                                                                         </ControlTemplate>
@@ -350,12 +348,12 @@
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
                         <DataTemplate>
-                            <Border Background="{StaticResource SurfaceBrush}"
+                            <Border Background="{StaticResource BgRaisedBrush}"
                                     CornerRadius="3" Padding="8,4" Margin="0,2">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Name}" FontWeight="Bold"
-                                               Foreground="{StaticResource LavenderBrush}"/>
-                                    <TextBlock Foreground="{StaticResource SubTextBrush}" Margin="8,0,0,0">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                    <TextBlock Foreground="{StaticResource TextTertiaryBrush}" Margin="8,0,0,0">
                                         <TextBlock.Text>
                                             <MultiBinding StringFormat="({0} Prozesse — {1})">
                                                 <Binding Path="ItemCount"/>
@@ -376,12 +374,13 @@
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,6,0"
+                                       Opacity="0.85"
                                        RenderOptions.BitmapScalingMode="HighQuality"/>
                                 <TextBlock Text="▲" Margin="0,0,4,0"
-                                           Foreground="{StaticResource RedBrush}"
+                                           Foreground="{StaticResource WarningBrush}"
                                            Visibility="{Binding IsGrowing, Converter={StaticResource BoolToVisibility}}"/>
                                 <TextBlock Text="{Binding Name}" FontWeight="Medium"
-                                           Foreground="{StaticResource TextBrush}"/>
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -390,7 +389,7 @@
                 <DataGridTextColumn Header="PID" Binding="{Binding Pid}" Width="70">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource SubTextBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
                             <Setter Property="TextAlignment" Value="Right"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
@@ -401,7 +400,7 @@
                                     SortMemberPath="WorkingSet">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                             <Setter Property="TextAlignment" Value="Right"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
@@ -412,7 +411,7 @@
                                     SortMemberPath="PrivateBytes">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource SubTextBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
                             <Setter Property="TextAlignment" Value="Right"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
@@ -423,7 +422,7 @@
                                     SortMemberPath="PeakWorkingSet">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource SubTextBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
                             <Setter Property="TextAlignment" Value="Right"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>

@@ -1,27 +1,29 @@
 # ram-dump
 
 ## Stand
-- Erstellt: 2026-04-04
-- Status: v2 deployed, bereit zum Build-Test
+- 2026-04-20: Icon (Variant A) + ramdump-stack Farbsystem (COLORS.md) angewendet
+- Status: bereit zum Build-Test unter Windows
 
 ## Struktur
 - .NET 8 WPF, MVVM (CommunityToolkit.Mvvm)
 - NuGet: CommunityToolkit.Mvvm 8.4.0, Hardcodet.NotifyIcon.Wpf 2.0.1
-- ~30 Dateien
 
-## v2 Features (neu)
-- Exakter Cache via GetPerformanceInfo (statt 30%-Schätzung)
-- Vorher/Nachher-Anzeige nach Cleanup ("24.1 GB -> 19.8 GB")
-- Prozess-Gruppierung (Toggle, mit Summen-Header)
-- Top-Wachstum: Prozesse mit >50MB Wachstum markiert (rot ▲)
-- Prozess-Icons (aus exe extrahiert, gecached)
-- Keyboard Shortcuts: F5, Ctrl+T, Ctrl+F, Ctrl+E
-- CSV Export (SaveFileDialog)
-- Settings persistieren (%APPDATA%/RamDump/settings.json)
-- Bestätigungsdialog bei Voll-Bereinigung
-- System Tray: Minimize to tray, 85%-Warnung
-- Suchfeld mit Placeholder
+## v2 Features
+- Exakter Cache via GetPerformanceInfo
+- Vorher/Nachher-Anzeige nach Cleanup
+- Prozess-Gruppierung (Toggle, Summen-Header)
+- Top-Wachstum-Marker (▲ in Warning-Orange)
+- Prozess-Icons (aus exe, gecached, Opacity 85%)
+- Shortcuts: F5, Ctrl+T, Ctrl+F, Ctrl+E
+- CSV Export, Settings-Persistenz, Tray-Icon
+
+## Design (2026-04-20)
+- Icon: `Resources/app-icon.svg` (Master) + `Resources/app.ico` (16/24/32/48/64/128/256)
+  PNG-Set in `Resources/icons/`. Rebuild via `rsvg-convert` + Pillow.
+- Farbsystem: `COLORS.md` — Ocker (#D4A574) als einzige Markenfarbe
+- ProgressBar 4 Stufen (60/80/92): Grün → Ocker → Orange → Rot
+- Voll-Bereinigung = destruktiv (Danger-Border), Toggles = Accent-Subtle
 
 ## Offenes
-- App-Icon (.ico) noch nicht erstellt
+- Build-Test auf W11: `dotnet build` + Icon-Prüfung in Taskleiste (16/24 px)
 - CLAUDE.md Update (braucht /cadmin)

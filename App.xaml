@@ -3,59 +3,100 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:tb="http://www.hardcodet.net/taskbar">
     <Application.Resources>
-        <!-- Catppuccin Mocha Farben -->
-        <Color x:Key="BaseColor">#1E1E2E</Color>
-        <Color x:Key="MantelColor">#181825</Color>
-        <Color x:Key="CrustColor">#11111B</Color>
-        <Color x:Key="SurfaceColor">#313244</Color>
-        <Color x:Key="Surface1Color">#45475A</Color>
-        <Color x:Key="OverlayColor">#6C7086</Color>
-        <Color x:Key="TextColor">#CDD6F4</Color>
-        <Color x:Key="SubTextColor">#A6ADC8</Color>
-        <Color x:Key="LavenderColor">#B4BEFE</Color>
-        <Color x:Key="GreenColor">#A6E3A1</Color>
-        <Color x:Key="YellowColor">#F9E2AF</Color>
-        <Color x:Key="RedColor">#F38BA8</Color>
-        <Color x:Key="BlueColor">#89B4FA</Color>
+        <!-- ramdump-stack · Farbsystem (COLORS.md) -->
+        <!-- Base -->
+        <Color x:Key="BgBaseColor">#0F0F10</Color>
+        <Color x:Key="BgSurfaceColor">#141415</Color>
+        <Color x:Key="BgRaisedColor">#1A1A1C</Color>
+        <Color x:Key="BgHoverColor">#22221F</Color>
+        <Color x:Key="BgSelectedColor">#2A2520</Color>
 
-        <SolidColorBrush x:Key="BaseBrush" Color="{StaticResource BaseColor}"/>
-        <SolidColorBrush x:Key="MantelBrush" Color="{StaticResource MantelColor}"/>
-        <SolidColorBrush x:Key="CrustBrush" Color="{StaticResource CrustColor}"/>
-        <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
-        <SolidColorBrush x:Key="Surface1Brush" Color="{StaticResource Surface1Color}"/>
-        <SolidColorBrush x:Key="OverlayBrush" Color="{StaticResource OverlayColor}"/>
-        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
-        <SolidColorBrush x:Key="SubTextBrush" Color="{StaticResource SubTextColor}"/>
-        <SolidColorBrush x:Key="LavenderBrush" Color="{StaticResource LavenderColor}"/>
-        <SolidColorBrush x:Key="GreenBrush" Color="{StaticResource GreenColor}"/>
-        <SolidColorBrush x:Key="BlueBrush" Color="{StaticResource BlueColor}"/>
-        <SolidColorBrush x:Key="YellowBrush" Color="{StaticResource YellowColor}"/>
-        <SolidColorBrush x:Key="RedBrush" Color="{StaticResource RedColor}"/>
+        <!-- Borders -->
+        <Color x:Key="BorderSubtleColor">#26262A</Color>
+        <Color x:Key="BorderDefaultColor">#33332E</Color>
+        <Color x:Key="BorderStrongColor">#4A4740</Color>
+        <Color x:Key="DividerColor">#1E1E20</Color>
+
+        <!-- Text -->
+        <Color x:Key="TextPrimaryColor">#EDEAE3</Color>
+        <Color x:Key="TextSecondaryColor">#B8B3A8</Color>
+        <Color x:Key="TextTertiaryColor">#7A766E</Color>
+        <Color x:Key="TextDisabledColor">#4E4B45</Color>
+        <Color x:Key="TextOnAccentColor">#1A1407</Color>
+
+        <!-- Accent -->
+        <Color x:Key="AccentColor">#D4A574</Color>
+        <Color x:Key="AccentHoverColor">#E3B789</Color>
+        <Color x:Key="AccentPressedColor">#B8895A</Color>
+
+        <!-- Load states -->
+        <Color x:Key="LoadOkColor">#6FA26A</Color>
+        <Color x:Key="LoadWarnColor">#D4A574</Color>
+        <Color x:Key="LoadHighColor">#D98A5C</Color>
+        <Color x:Key="LoadCriticalColor">#C25A4E</Color>
+        <Color x:Key="LoadTrackColor">#26262A</Color>
+
+        <!-- Semantic -->
+        <Color x:Key="SuccessColor">#6FA26A</Color>
+        <Color x:Key="InfoColor">#7D9DB5</Color>
+        <Color x:Key="WarningColor">#D98A5C</Color>
+        <Color x:Key="DangerColor">#C25A4E</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BgBaseBrush" Color="{StaticResource BgBaseColor}"/>
+        <SolidColorBrush x:Key="BgSurfaceBrush" Color="{StaticResource BgSurfaceColor}"/>
+        <SolidColorBrush x:Key="BgRaisedBrush" Color="{StaticResource BgRaisedColor}"/>
+        <SolidColorBrush x:Key="BgHoverBrush" Color="{StaticResource BgHoverColor}"/>
+        <SolidColorBrush x:Key="BgSelectedBrush" Color="{StaticResource BgSelectedColor}"/>
+
+        <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource BorderSubtleColor}"/>
+        <SolidColorBrush x:Key="BorderDefaultBrush" Color="{StaticResource BorderDefaultColor}"/>
+        <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrongColor}"/>
+        <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}"/>
+
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource TextTertiaryColor}"/>
+        <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}"/>
+        <SolidColorBrush x:Key="TextOnAccentBrush" Color="{StaticResource TextOnAccentColor}"/>
+
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}"/>
+        <SolidColorBrush x:Key="AccentPressedBrush" Color="{StaticResource AccentPressedColor}"/>
+        <SolidColorBrush x:Key="AccentSubtleBrush" Color="#22D4A574"/>
+        <SolidColorBrush x:Key="AccentRingBrush" Color="#66D4A574"/>
+
+        <SolidColorBrush x:Key="LoadOkBrush" Color="{StaticResource LoadOkColor}"/>
+        <SolidColorBrush x:Key="LoadWarnBrush" Color="{StaticResource LoadWarnColor}"/>
+        <SolidColorBrush x:Key="LoadHighBrush" Color="{StaticResource LoadHighColor}"/>
+        <SolidColorBrush x:Key="LoadCriticalBrush" Color="{StaticResource LoadCriticalColor}"/>
+        <SolidColorBrush x:Key="LoadTrackBrush" Color="{StaticResource LoadTrackColor}"/>
+
+        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+        <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
 
         <!-- Window -->
         <Style TargetType="Window">
-            <Setter Property="Background" Value="{StaticResource BaseBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Background" Value="{StaticResource BgBaseBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="13"/>
         </Style>
 
         <!-- TextBlock -->
         <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         </Style>
 
         <!-- TextBox -->
         <Style TargetType="TextBox">
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Surface1Brush}"/>
-            <Setter Property="CaretBrush" Value="{StaticResource TextBrush}"/>
-            <Setter Property="SelectionBrush">
-                <Setter.Value>
-                    <SolidColorBrush Color="{StaticResource LavenderColor}" Opacity="0.4"/>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Background" Value="{StaticResource BgBaseBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="SelectionBrush" Value="{StaticResource AccentSubtleBrush}"/>
             <Setter Property="Padding" Value="6,4"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Template">
@@ -69,11 +110,12 @@
                             <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource LavenderBrush}"/>
-                            </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource OverlayBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BorderStrongBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="2"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -83,10 +125,10 @@
 
         <!-- ContextMenu -->
         <Style TargetType="ContextMenu">
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Surface1Brush}"/>
+            <Setter Property="Background" Value="{StaticResource BgRaisedBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="Padding" Value="2"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -105,7 +147,7 @@
         <!-- MenuItem -->
         <Style TargetType="MenuItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -116,10 +158,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource Surface1Brush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BgHoverBrush}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Foreground" Value="{StaticResource OverlayBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextDisabledBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -129,7 +171,7 @@
 
         <!-- Separator -->
         <Style TargetType="Separator">
-            <Setter Property="Background" Value="{StaticResource Surface1Brush}"/>
+            <Setter Property="Background" Value="{StaticResource BorderSubtleBrush}"/>
             <Setter Property="Height" Value="1"/>
             <Setter Property="Margin" Value="4,2"/>
             <Setter Property="Template">
@@ -144,18 +186,18 @@
 
         <!-- ToolTip -->
         <Style TargetType="ToolTip">
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Surface1Brush}"/>
+            <Setter Property="Background" Value="{StaticResource BgRaisedBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,4"/>
         </Style>
 
-        <!-- Button -->
+        <!-- Button: Default (transparent + Border) -->
         <Style TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Surface1Brush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -172,10 +214,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource Surface1Brush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BgRaisedBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BorderStrongBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource OverlayBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BgHoverBrush}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.4"/>
@@ -186,11 +229,11 @@
             </Setter>
         </Style>
 
-        <!-- ToggleButton -->
+        <!-- ToggleButton: aktiv = Accent-Subtle + Accent Border/Text -->
         <Style TargetType="ToggleButton">
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Surface1Brush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -206,16 +249,13 @@
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background">
-                                    <Setter.Value>
-                                        <SolidColorBrush Color="{StaticResource GreenColor}" Opacity="0.3"/>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource GreenBrush}"/>
-                            </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource Surface1Brush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BorderStrongBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentSubtleBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -223,23 +263,23 @@
             </Setter>
         </Style>
 
-        <!-- DataGrid -->
+        <!-- DataGrid: kein Zebra (§7) -->
         <Style TargetType="DataGrid">
-            <Setter Property="Background" Value="{StaticResource MantelBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="RowBackground" Value="{StaticResource MantelBrush}"/>
-            <Setter Property="AlternatingRowBackground" Value="{StaticResource CrustBrush}"/>
+            <Setter Property="Background" Value="{StaticResource BgBaseBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}"/>
+            <Setter Property="RowBackground" Value="{StaticResource BgBaseBrush}"/>
+            <Setter Property="AlternatingRowBackground" Value="{StaticResource BgBaseBrush}"/>
             <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource DividerBrush}"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
         </Style>
 
         <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource SubTextBrush}"/>
+            <Setter Property="Background" Value="{StaticResource BgSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
             <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Surface1Brush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}"/>
             <Setter Property="BorderThickness" Value="0,0,1,1"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -256,7 +296,7 @@
                                                   VerticalAlignment="Center"/>
                                 <Path x:Name="SortArrow" Visibility="Collapsed"
                                       HorizontalAlignment="Right" VerticalAlignment="Center"
-                                      Fill="{StaticResource SubTextBrush}" Margin="4,0,0,0"/>
+                                      Fill="{StaticResource AccentBrush}" Margin="4,0,0,0"/>
                                 <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Width="2"
                                        Style="{x:Null}" Cursor="SizeWE" Opacity="0"/>
                                 <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Width="2"
@@ -265,8 +305,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource Surface1Brush}"/>
-                                <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BgRaisedBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                             </Trigger>
                             <Trigger Property="SortDirection" Value="Ascending">
                                 <Setter TargetName="SortArrow" Property="Visibility" Value="Visible"/>
@@ -297,12 +337,8 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background">
-                        <Setter.Value>
-                            <SolidColorBrush Color="{StaticResource LavenderColor}" Opacity="0.15"/>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                    <Setter Property="Background" Value="{StaticResource BgSelectedBrush}"/>
+                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -311,26 +347,20 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background">
-                        <Setter.Value>
-                            <SolidColorBrush Color="{StaticResource LavenderColor}" Opacity="0.15"/>
-                        </Setter.Value>
-                    </Setter>
+                    <Setter Property="Background" Value="{StaticResource BgSelectedBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                    <Setter Property="BorderThickness" Value="2,0,0,0"/>
                 </Trigger>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background">
-                        <Setter.Value>
-                            <SolidColorBrush Color="{StaticResource LavenderColor}" Opacity="0.08"/>
-                        </Setter.Value>
-                    </Setter>
+                    <Setter Property="Background" Value="{StaticResource BgHoverBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <!-- ProgressBar -->
+        <!-- ProgressBar: Track = LoadTrack, Indicator-Farbe kommt vom PercentToColorConverter -->
         <Style TargetType="ProgressBar">
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Surface1Brush}"/>
+            <Setter Property="Background" Value="{StaticResource LoadTrackBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Height" Value="20"/>
             <Setter Property="Template">
@@ -380,13 +410,13 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Thumb">
                         <Border x:Name="thumbBorder" CornerRadius="4"
-                                Background="{StaticResource Surface1Brush}"/>
+                                Background="{StaticResource BorderDefaultBrush}"/>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="thumbBorder" Property="Background" Value="{StaticResource OverlayBrush}"/>
+                                <Setter TargetName="thumbBorder" Property="Background" Value="{StaticResource BorderStrongBrush}"/>
                             </Trigger>
                             <Trigger Property="IsDragging" Value="True">
-                                <Setter TargetName="thumbBorder" Property="Background" Value="{StaticResource LavenderBrush}"/>
+                                <Setter TargetName="thumbBorder" Property="Background" Value="{StaticResource AccentBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -403,7 +433,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
-                        <Border Background="{StaticResource MantelBrush}">
+                        <Border Background="{StaticResource BgSurfaceBrush}">
                             <Track x:Name="PART_Track" IsDirectionReversed="True">
                                 <Track.DecreaseRepeatButton>
                                     <RepeatButton Style="{StaticResource ScrollBarPageButton}"
@@ -429,7 +459,7 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ScrollBar">
-                                <Border Background="{StaticResource MantelBrush}">
+                                <Border Background="{StaticResource BgSurfaceBrush}">
                                     <Track x:Name="PART_Track" IsDirectionReversed="False">
                                         <Track.DecreaseRepeatButton>
                                             <RepeatButton Style="{StaticResource ScrollBarPageButton}"

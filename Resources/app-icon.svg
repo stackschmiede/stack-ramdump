@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" shape-rendering="geometricPrecision" aria-label="ramdump-stack">
+  <rect width="64" height="64" rx="14" ry="14" fill="#141415"/>
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="13" ry="13" fill="none" stroke="#EDEAE3" stroke-opacity="0.06" stroke-width="1"/>
+
+  <g stroke="#EDEAE3" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">
+
+    <g>
+      <path d="M14 44 L11 46 M20 47.5 L17 49.5 M26 51 L23 53 M42 51 L45 53 M48 47.5 L51 49.5 M54 44 L57 46"
+            stroke="#D4A574" stroke-width="1.4"/>
+      <path d="M12 40 L32 48 L52 40 L32 32 Z" fill="#1A1A1C"/>
+      <path d="M12 40 L32 48 L32 52 L12 44 Z" fill="#0F0F10"/>
+      <path d="M52 40 L32 48 L32 52 L52 44 Z" fill="#141415"/>
+    </g>
+
+    <g transform="translate(0,-10)">
+      <path d="M12 40 L32 48 L52 40 L32 32 Z" fill="#1A1A1C"/>
+      <path d="M12 40 L32 48 L32 52 L12 44 Z" fill="#0F0F10"/>
+      <path d="M52 40 L32 48 L32 52 L52 44 Z" fill="#141415"/>
+    </g>
+
+    <g transform="translate(0,-20)">
+      <path d="M12 40 L32 48 L52 40 L32 32 Z" fill="#1A1A1C"/>
+      <path d="M12 40 L32 48 L32 52 L12 44 Z" fill="#0F0F10"/>
+      <path d="M52 40 L32 48 L32 52 L52 44 Z" fill="#141415"/>
+      <path d="M22 36 L32 40 L42 36" stroke="#D4A574" stroke-width="1.6" fill="none"/>
+    </g>
+  </g>
+</svg>

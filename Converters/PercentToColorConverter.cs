@@ -4,6 +4,7 @@ using System.Windows.Media;
 
 namespace RamDump.Converters;
 
+// COLORS.md §5: Load states — Grün → Ocker → Orange → Rot an Auslastungs-Schwellen gekoppelt
 public class PercentToColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -12,9 +13,10 @@ public class PercentToColorConverter : IValueConverter
 
         return percent switch
         {
-            < 60 => new SolidColorBrush(Color.FromRgb(0xA6, 0xE3, 0xA1)),  // Grün
-            < 80 => new SolidColorBrush(Color.FromRgb(0xF9, 0xE2, 0xAF)),  // Gelb
-            _ => new SolidColorBrush(Color.FromRgb(0xF3, 0x8B, 0xA8)),     // Rot
+            < 60 => new SolidColorBrush(Color.FromRgb(0x6F, 0xA2, 0x6A)), // LoadOk
+            < 80 => new SolidColorBrush(Color.FromRgb(0xD4, 0xA5, 0x74)), // LoadWarn (= Accent, bewusst)
+            < 92 => new SolidColorBrush(Color.FromRgb(0xD9, 0x8A, 0x5C)), // LoadHigh
+            _    => new SolidColorBrush(Color.FromRgb(0xC2, 0x5A, 0x4E)), // LoadCritical
         };
     }
 
