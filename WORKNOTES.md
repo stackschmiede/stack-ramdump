@@ -29,6 +29,13 @@
 - Services/AppSettings.cs — RamWindowHeight, ActiveFilter
 - Converters/ — 7 neue Konverter (s.o.)
 
+## Session 6 — Performance unter RAM-Druck
+- **Hotpath**: `Process.MainModule.FileName` ist unter Speicherdruck extrem langsam (100–300 ms/Prozess). Bei 300 Prozessen × 5 s-Refresh → App permanent blockiert.
+- **Fix**: `QueryFullProcessImageName` via bereits offenem Handle (`MemoryQueryService`), IsSystem- + Pfad-Cache pro PID. `ProcessIconService` nutzt denselben Pfad-Cache.
+- **Pause-im-Tray**: `MainWindow.IsVisibleChanged` → `MainViewModel.SetWindowHidden()` stoppt den Refresh-Timer UND schaltet `Monitor.IsActive=false` (LHM-Sensoren laufen sonst unsichtbar weiter).
+- Cache-Pruning: wenn >64 tote PIDs im Cache, werden sie beim nächsten Refresh rausgeputzt.
+- Erwartet: Erster Refresh ~300 ms, weitere ~0 ms für gecachte PIDs.
+
 ## Session 5 — Splash-Animation
 - SplashWindow (560×560, borderless, Topmost) zeigt 64×64 Design-Canvas via Viewbox
 - Animation (4s): 3 Iso-Chips droppen gestaffelt (bottom → middle → top, easeInQuad), Pins zeichnen sich nach Impact, Accent-Linie am Top-Chip, Flash + Spark-Burst + Shake, Wordmark "ramdump-stack" fadet letter-by-letter ein

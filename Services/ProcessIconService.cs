@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
@@ -23,14 +23,31 @@ public static class ProcessIconService
 
     private static string? GetMainModulePath(int pid)
     {
+        // Cache-Treffer aus MemoryQueryService (dort per QueryFullProcessImageName aufgelöst)
+        var cached = MemoryQueryService.GetCachedPath(pid);
+        if (!string.IsNullOrEmpty(cached)) return cached;
+
+        // Fallback: eigener Handle-Pfad — vermeidet Process.MainModule (teuer unter Last)
+        var handle = NativeMethods.OpenProcess(
+            NativeMethods.PROCESS_QUERY_INFORMATION | NativeMethods.PROCESS_VM_READ,
+            false, pid);
+        if (handle == IntPtr.Zero) return null;
+
         try
         {
-            using var proc = Process.GetProcessById(pid);
-            return proc.MainModule?.FileName;
+            var sb = new StringBuilder(1024);
+            uint size = (uint)sb.Capacity;
+            return NativeMethods.QueryFullProcessImageName(handle, 0, sb, ref size)
+                ? sb.ToString()
+                : null;
         }
         catch
         {
             return null;
+        }
+        finally
+        {
+            NativeMethods.CloseHandle(handle);
         }
     }
 

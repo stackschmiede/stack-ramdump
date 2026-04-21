@@ -39,6 +39,8 @@ public partial class MainWindow : Window
             MainTabs.SelectedIndex = Math.Clamp(saved.ActiveTabIndex, 0, MainTabs.Items.Count - 1);
         };
 
+        IsVisibleChanged += (_, _) => _viewModel.SetWindowHidden(!IsVisible);
+
         WeakReferenceMessenger.Default.Register<FocusSearchMessage>(this, (_, _) =>
         {
             SearchBox.Focus();

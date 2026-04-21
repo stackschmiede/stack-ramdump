@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Text;
 using RamDump.Models;
 
 namespace RamDump.Services;
@@ -21,16 +23,50 @@ public class MemoryQueryService
         "lsaiso", "wlanext", "wermgr", "winsat", "upfc", "memory compression",
     };
 
-    private static bool IsSystemProcess(Process proc)
+    // Cache IsSystem pro PID. Neue PIDs werden einmalig aufgelöst, Alte rausgeputzt.
+    private static readonly ConcurrentDictionary<int, bool> IsSystemByPid = new();
+    // Pfad-Cache pro PID (für IconService wiederverwendbar).
+    private static readonly ConcurrentDictionary<int, string> PathByPid = new();
+
+    public static string? GetCachedPath(int pid) =>
+        PathByPid.TryGetValue(pid, out var p) ? p : null;
+
+    private static string? TryQueryImagePath(IntPtr handle)
     {
+        if (handle == IntPtr.Zero) return null;
         try
         {
-            var path = proc.MainModule?.FileName ?? string.Empty;
-            if (!string.IsNullOrEmpty(path))
-                return path.StartsWith(WinDir, StringComparison.OrdinalIgnoreCase);
+            var sb = new StringBuilder(1024);
+            uint size = (uint)sb.Capacity;
+            return NativeMethods.QueryFullProcessImageName(handle, 0, sb, ref size)
+                ? sb.ToString()
+                : null;
         }
-        catch { }
-        return KnownSystemNames.Contains(proc.ProcessName);
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool ResolveIsSystem(int pid, IntPtr handle, string processName)
+    {
+        // Namens-Shortcut: bekannte Systemprozesse ohne Pfad-Auflösung bejahen.
+        if (KnownSystemNames.Contains(processName))
+            return true;
+
+        if (IsSystemByPid.TryGetValue(pid, out var cached))
+            return cached;
+
+        bool isSys = false;
+        var path = TryQueryImagePath(handle);
+        if (!string.IsNullOrEmpty(path))
+        {
+            PathByPid[pid] = path;
+            isSys = path.StartsWith(WinDir, StringComparison.OrdinalIgnoreCase);
+        }
+
+        IsSystemByPid[pid] = isSys;
+        return isSys;
     }
 
     public static bool IsAdmin()
@@ -77,9 +113,13 @@ public class MemoryQueryService
 
     public static List<ProcessMemoryInfo> GetProcesses()
     {
-        var result = new List<ProcessMemoryInfo>();
-        foreach (var proc in Process.GetProcesses())
+        var all = Process.GetProcesses();
+        var result = new List<ProcessMemoryInfo>(all.Length);
+        var alive = new HashSet<int>(all.Length);
+
+        foreach (var proc in all)
         {
+            alive.Add(proc.Id);
             try
             {
                 var info = GetProcessMemoryDetails(proc);
@@ -96,32 +136,50 @@ public class MemoryQueryService
             }
         }
 
+        // Prune caches für nicht mehr lebende PIDs — hält Cache klein.
+        PruneCache(IsSystemByPid, alive);
+        PruneCache(PathByPid, alive);
+
         return result;
+    }
+
+    private static void PruneCache<TValue>(ConcurrentDictionary<int, TValue> cache, HashSet<int> alive)
+    {
+        if (cache.Count <= alive.Count + 64) return; // günstig: nichts zu tun
+        foreach (var pid in cache.Keys)
+        {
+            if (!alive.Contains(pid))
+                cache.TryRemove(pid, out _);
+        }
     }
 
     private static ProcessMemoryInfo? GetProcessMemoryDetails(Process proc)
     {
-        bool isSys = IsSystemProcess(proc);
+        int pid = proc.Id;
+        string name = proc.ProcessName;
 
         var handle = NativeMethods.OpenProcess(
             NativeMethods.PROCESS_QUERY_INFORMATION | NativeMethods.PROCESS_VM_READ,
-            false, proc.Id);
-
-        if (handle == IntPtr.Zero)
-        {
-            return new ProcessMemoryInfo
-            {
-                Pid = proc.Id,
-                Name = proc.ProcessName,
-                WorkingSet = proc.WorkingSet64,
-                PrivateBytes = proc.PrivateMemorySize64,
-                PeakWorkingSet = proc.PeakWorkingSet64,
-                IsSystemProcess = isSys,
-            };
-        }
+            false, pid);
 
         try
         {
+            bool isSys = ResolveIsSystem(pid, handle, name);
+
+            if (handle == IntPtr.Zero)
+            {
+                // Fallback: managed API (langsamer, aber robust gegen Zugriffsverweigerung).
+                return new ProcessMemoryInfo
+                {
+                    Pid = pid,
+                    Name = name,
+                    WorkingSet = proc.WorkingSet64,
+                    PrivateBytes = proc.PrivateMemorySize64,
+                    PeakWorkingSet = proc.PeakWorkingSet64,
+                    IsSystemProcess = isSys,
+                };
+            }
+
             var counters = new NativeMethods.ProcessMemoryCounters
             {
                 cb = (uint)Marshal.SizeOf<NativeMethods.ProcessMemoryCounters>()
@@ -131,8 +189,8 @@ public class MemoryQueryService
             {
                 return new ProcessMemoryInfo
                 {
-                    Pid = proc.Id,
-                    Name = proc.ProcessName,
+                    Pid = pid,
+                    Name = name,
                     WorkingSet = (long)(ulong)counters.WorkingSetSize,
                     PrivateBytes = (long)(ulong)counters.PagefileUsage,
                     PeakWorkingSet = (long)(ulong)counters.PeakWorkingSetSize,
@@ -142,8 +200,8 @@ public class MemoryQueryService
 
             return new ProcessMemoryInfo
             {
-                Pid = proc.Id,
-                Name = proc.ProcessName,
+                Pid = pid,
+                Name = name,
                 WorkingSet = proc.WorkingSet64,
                 PrivateBytes = proc.PrivateMemorySize64,
                 PeakWorkingSet = proc.PeakWorkingSet64,
@@ -152,7 +210,8 @@ public class MemoryQueryService
         }
         finally
         {
-            NativeMethods.CloseHandle(handle);
+            if (handle != IntPtr.Zero)
+                NativeMethods.CloseHandle(handle);
         }
     }
 

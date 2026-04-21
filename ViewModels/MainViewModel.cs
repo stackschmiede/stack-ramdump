@@ -23,6 +23,7 @@ public partial class MainViewModel : ObservableObject
     private const long TopThresholdBytes = 100 * 1024 * 1024; // 100 MB
     private const long CriticalThresholdBytes = (long)(1.5 * 1024 * 1024 * 1024); // 1.5 GB
     private bool _suppressSettingsSave;
+    private bool _windowHidden;
 
     [ObservableProperty]
     private SystemMemoryInfo _systemMemory = new();
@@ -116,10 +117,24 @@ public partial class MainViewModel : ObservableObject
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += (_, _) => RefreshCommand.Execute(null);
 
-        if (AutoRefresh)
-            _refreshTimer.Start();
+        UpdateTimerState();
 
         RefreshCommand.Execute(null);
+    }
+
+    public void SetWindowHidden(bool hidden)
+    {
+        if (_windowHidden == hidden) return;
+        _windowHidden = hidden;
+        UpdateTimerState();
+        // Monitor-Sensoren (LHM + Perf-Counter) im Tray abschalten — sonst laufen sie unsichtbar weiter
+        if (hidden) Monitor.IsActive = false;
+    }
+
+    private void UpdateTimerState()
+    {
+        if (AutoRefresh && !_windowHidden) _refreshTimer.Start();
+        else _refreshTimer.Stop();
     }
 
     partial void OnSearchTextChanged(string value)
@@ -130,8 +145,7 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnAutoRefreshChanged(bool value)
     {
-        if (value) _refreshTimer.Start();
-        else _refreshTimer.Stop();
+        UpdateTimerState();
         SaveSettings();
     }
 

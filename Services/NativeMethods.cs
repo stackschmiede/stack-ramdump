@@ -20,6 +20,11 @@ internal static class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
 
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool QueryFullProcessImageName(
+        IntPtr hProcess, uint dwFlags, System.Text.StringBuilder lpExeName, ref uint lpdwSize);
+
     [DllImport("psapi.dll", SetLastError = true)]
     public static extern bool GetProcessMemoryInfo(
         IntPtr hProcess, out ProcessMemoryCounters counters, uint cb);
