@@ -2,17 +2,18 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="RAM Dump"
-        Width="560" Height="560"
+        Width="480" Height="480"
         WindowStyle="None"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         Topmost="True"
-        AllowsTransparency="False"
-        Background="#141415"
+        AllowsTransparency="True"
+        Background="Transparent"
         WindowStartupLocation="CenterScreen"
         Cursor="Arrow"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
+    <Border x:Name="RootBorder" Background="#141415" CornerRadius="18">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -22,7 +23,7 @@
         <!-- Animated tile -->
         <Viewbox Grid.Row="0" Width="380" Height="380"
                  HorizontalAlignment="Center" VerticalAlignment="Center"
-                 Margin="0,20,0,0">
+                 Margin="0,12,0,0">
             <Canvas Width="64" Height="64">
                 <!-- Win11 rounded tile -->
                 <Rectangle Width="64" Height="64" RadiusX="14" RadiusY="14" Fill="#141415"/>
@@ -152,7 +153,8 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Top"
-                    Margin="0,8,0,48"
+                    Margin="0,4,0,28"
                     Opacity="0"/>
     </Grid>
+    </Border>
 </Window>
