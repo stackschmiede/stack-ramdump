@@ -13,7 +13,7 @@
         Cursor="Arrow"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
-    <Border x:Name="RootBorder" Background="#141415" CornerRadius="18">
+    <Border x:Name="RootBorder" Background="#141415" CornerRadius="22">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>

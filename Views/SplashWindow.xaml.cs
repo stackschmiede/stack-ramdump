@@ -26,8 +26,7 @@ public partial class SplashWindow : Window
     private const double WORDMARK_START = 2.30;
     private const double WORDMARK_END   = 2.80;
 
-    private const double FADE_OUT_START = 3.55;
-    private const double FADE_OUT_END   = 3.95;
+    public event EventHandler? AnimationFinished;
 
     private static readonly Brush InkBrush   = (SolidColorBrush)new BrushConverter().ConvertFromString("#0F0F10")!;
     private static readonly Brush AccentBrush = (SolidColorBrush)new BrushConverter().ConvertFromString("#D4A574")!;
@@ -199,13 +198,6 @@ public partial class SplashWindow : Window
 
         // Wordmark
         UpdateWordmark(t);
-
-        // Fade-out toward the end
-        if (t >= FADE_OUT_START)
-        {
-            double f = Clamp01((t - FADE_OUT_START) / (FADE_OUT_END - FADE_OUT_START));
-            Opacity = 1 - f;
-        }
     }
 
     private void UpdatePins(double progress)
@@ -320,6 +312,12 @@ public partial class SplashWindow : Window
     {
         if (_finished) return;
         _finished = true;
+        CompositionTarget.Rendering -= OnRender;
+        AnimationFinished?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void CloseSplash()
+    {
         CompositionTarget.Rendering -= OnRender;
         Close();
     }

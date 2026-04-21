@@ -18,7 +18,13 @@ public partial class App : Application
         base.OnStartup(e);
 
         var splash = new SplashWindow();
-        splash.Closed += (_, _) => LaunchMainWindow();
+        splash.AnimationFinished += (_, _) =>
+        {
+            LaunchMainWindow();
+            // Nach Show+Activate den Splash schließen — so bleibt das Logo sichtbar,
+            // bis das Hauptfenster wirklich auf dem Screen ist.
+            splash.CloseSplash();
+        };
         splash.Show();
     }
 
