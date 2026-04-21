@@ -65,6 +65,7 @@ public partial class MainWindow : Window
         if (isMonitor)
             _viewModel.Monitor.EnsureInitialized();
         _viewModel.Monitor.IsActive = isMonitor;
+        _viewModel.SetRamTabActive(idx == RamTabIndex);
 
         if (idx == AboutTabIndex)
             _viewModel.About.LoadSystemInfo();

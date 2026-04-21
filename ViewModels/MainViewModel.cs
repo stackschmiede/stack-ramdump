@@ -24,6 +24,7 @@ public partial class MainViewModel : ObservableObject
     private const long CriticalThresholdBytes = (long)(1.5 * 1024 * 1024 * 1024); // 1.5 GB
     private bool _suppressSettingsSave;
     private bool _windowHidden;
+    private bool _ramTabActive = true; // Prozess-Enumeration nur wenn RAM-Tab sichtbar
 
     [ObservableProperty]
     private SystemMemoryInfo _systemMemory = new();
@@ -131,6 +132,20 @@ public partial class MainViewModel : ObservableObject
         if (hidden) Monitor.IsActive = false;
     }
 
+    // Wird von MainWindow beim Tab-Wechsel aufgerufen. RAM-Tab: volle Refresh inkl. Prozessliste.
+    // Andere Tabs: nur SystemMemory (günstig, hält Monitor-Hero aktuell). So läuft die teure
+    // Process.GetProcesses()-Enumeration nur, wenn jemand die Prozessliste tatsächlich sieht.
+    public void SetRamTabActive(bool active)
+    {
+        bool wasActive = _ramTabActive;
+        _ramTabActive = active;
+        if (active && !wasActive)
+        {
+            // Beim Wechsel zurück auf RAM sofort aktualisieren — sonst bis zu 5 s Altdaten
+            RefreshCommand.Execute(null);
+        }
+    }
+
     private void UpdateTimerState()
     {
         if (AutoRefresh && !_windowHidden) _refreshTimer.Start();
@@ -215,6 +230,9 @@ public partial class MainViewModel : ObservableObject
     {
         var mem = await Task.Run(MemoryQueryService.GetSystemMemory);
         SystemMemory = mem;
+
+        // Andere Tabs brauchen die Prozessliste nicht — enumerieren nur wenn RAM-Tab aktiv.
+        if (!_ramTabActive) return;
 
         var procs = await Task.Run(MemoryQueryService.GetProcesses);
 

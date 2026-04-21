@@ -29,6 +29,11 @@
 - Services/AppSettings.cs — RamWindowHeight, ActiveFilter
 - Converters/ — 7 neue Konverter (s.o.)
 
+## Session 7 — Tab-Scoped Refresh
+- Vorher: Monitor-Tab ließ **beides** parallel laufen — MainVM-Refresh (5 s, Prozesse enumerieren) + Monitor-Timer (2 s, LHM-Sensoren). Auf About-Tab lief die teure Enumeration ebenfalls weiter.
+- Jetzt: `SetRamTabActive(bool)` schaltet die `Process.GetProcesses()`-Enumeration. Auf Monitor/About läuft nur der billige `GetSystemMemory()` weiter — damit bleibt die RAM-Hero-Anzeige im Monitor aktuell.
+- Beim Wechsel zurück auf RAM triggert ein sofortiger Refresh, sonst bis zu 5 s Altdaten.
+
 ## Session 6 — Performance unter RAM-Druck
 - **Hotpath**: `Process.MainModule.FileName` ist unter Speicherdruck extrem langsam (100–300 ms/Prozess). Bei 300 Prozessen × 5 s-Refresh → App permanent blockiert.
 - **Fix**: `QueryFullProcessImageName` via bereits offenem Handle (`MemoryQueryService`), IsSystem- + Pfad-Cache pro PID. `ProcessIconService` nutzt denselben Pfad-Cache.
